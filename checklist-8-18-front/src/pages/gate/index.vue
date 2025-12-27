@@ -414,9 +414,16 @@ const openValidationModal = (item: GateQueueItem) => {
 const closeModal = () => { showModal.value = false; selectedItem.value = null; };
 
 const confirmExit = async () => {
+  // Garante que só envia se tudo estiver checkado
   if (!selectedItem.value || !isAllChecked.value) return;
+
   try {
-    await store.registerGateExit(selectedItem.value.id);
+    // Passamos os checks (true/false) para a Store
+    await store.registerGateExit(selectedItem.value.id, {
+      rfb: checks.rfb,       
+      armador: checks.armador
+    });
+
     closeModal();
   } catch (err) {
     alert(`Erro ao registrar saída: ${(err as Error).message}`);

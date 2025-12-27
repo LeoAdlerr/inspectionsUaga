@@ -30,7 +30,7 @@ export interface InspectionChecklistItem {
   updatedAt: string;
 }
 
-// [NOVO] Interfaces para representar os dados salvos no banco (Visualização)
+// Interfaces para representar os dados salvos no banco (Visualização)
 export interface InspectionSeal {
   id: number;
   inspectionId: number;
@@ -49,70 +49,94 @@ export interface InspectionImage {
   createdAt?: string;
 }
 
-// Interface para a Inspeção completa (Espelho do Banco de Dados)
+// Interface para a Inspeção completa (Sincronizada com o Backend)
 export interface Inspection {
-  // Identificação
+  // --- Identificação Principal ---
   id: number;
-  inspectorId: number;
-  inspector: User;
+  statusId: number;
+  status: Lookup; // Relação preenchida
   
-  // Novos campos de usuário
+  // --- Usuários Responsáveis ---
+  inspectorId?: number;
+  inspector?: User;
+  
   conferenteId?: number;
   conferente?: User;
 
+  // [NOVO] Operador de Portaria
+  gateOperatorId?: number;
+  gateOperator?: User;
+
+  // --- Dados da Carga/Motorista ---
   driverName: string;
-  
-  // Dados da Carga
   entryRegistration?: string;
   vehiclePlates?: string;
-  containerNumber: string; // Obrigatório
+  containerNumber: string; 
   transportDocument?: string;
+  
+  // [NOVO] Controle de Precinto (Crítico para TASK-RFB-03)
+  hasPrecinto: boolean; 
 
-  // Datas e Status
-  startDatetime: string;
-  endDatetime?: string;
+  // --- Timestamps (Datas) ---
+  // Nota: No Frontend recebemos como string (ISO format) do JSON
   createdAt: string;
-  status: Lookup;
-  statusId?: number; // Útil para verificações rápidas (ex: if statusId === 2)
+  updatedAt: string;
+  startDatetime: string;
+  endDatetime?: string;         // Fim Geral
+  
+  // [NOVOS] Timestamps de Fluxo
+  inspectionStartedAt?: string;
+  conferenceStartedAt?: string;
+  conferenceEndedAt?: string;
+  gateOutAt?: string;           // Momento da Saída Física
 
-  // Relações (Lookups)
+  // --- Relações (Lookups) ---
+  modalityId: number;
   modality: Lookup;
+  
+  operationTypeId: number;
   operationType: Lookup;
+  
+  unitTypeId: number;
   unitType: Lookup;
+  
+  containerTypeId?: number;
   containerType?: Lookup;
 
-  // [CORREÇÃO DO ERRO DE COMPILAÇÃO]
-  // Estes campos existem no banco e precisamos deles para mostrar na UI se já foi assinado
+  // --- Assinaturas (Caminhos) ---
   driverSignaturePath?: string;
   inspectorSignaturePath?: string;
   sealVerificationSignaturePath?: string;
 
-  // Medidas
+  // --- Medidas Verificadas ---
   verifiedLength?: number;
   verifiedWidth?: number;
   verifiedHeight?: number;
 
-  // Lacres (Legado / Compatibilidade)
+  // --- Lacres (Campos Legados/Compatibilidade) ---
   sealUagaPostInspection?: string;
   sealUagaPostLoading?: string;
   sealShipper?: string;
   sealRfb?: string;
 
-  // Verificação de Portaria
+  // --- Verificação de Portaria (Gate Check) ---
   sealVerificationResponsibleName?: string;
   sealVerificationDate?: string;
+  // IDs dos status da verificação
   sealVerificationRfbStatusId?: number;
   sealVerificationShipperStatusId?: number;
   sealVerificationTapeStatusId?: number;
+  // Objetos Lookup completos (opcional, se o back enviar)
+  sealVerificationRfbStatus?: Lookup;
+  sealVerificationShipperStatus?: Lookup;
 
-  // Campos de Texto
+  // --- Campos de Texto / Arquivos ---
   observations?: string;
   actionTaken?: string;
+  generatedPdfPath?: string; // [NOVO] Caminho do PDF final gerado
 
-  // Arrays de Dados
+  // --- Listas de Dados ---
   items: InspectionChecklistItem[];
-  
-  // [NOVO] Listas retornadas pelo backend para exibir na tela de lacração/conferência
   seals?: InspectionSeal[];
   images?: InspectionImage[];
 }

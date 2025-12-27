@@ -600,11 +600,21 @@ export const apiService = {
     return apiFetch<GateQueueItem[]>('/gate/queue');
   },
   /**
-   * Registra a saída física do veículo.
+   * Registra a saída física do veículo (Gate Out).
+   * Endpoint: POST /gate/exit/:id
+   * Payload: RegisterGateExitDto
    */
-  async registerExit(inspectionId: number): Promise<void> {
+  async registerExit(
+    inspectionId: number, 
+    data: { 
+      sealVerificationRfbStatusId?: number; 
+      sealVerificationShipperStatusId?: number; 
+    }
+  ): Promise<void> {
+    // Agora enviamos o JSON no corpo da requisição
     await apiFetch<void>(`/gate/exit/${inspectionId}`, {
       method: 'POST',
+      body: JSON.stringify(data) 
     });
   },
 };

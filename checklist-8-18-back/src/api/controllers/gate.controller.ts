@@ -3,6 +3,8 @@ import {
   Get,
   Post,
   Param,
+  Body,
+  Req,
   ParseIntPipe,
   UseGuards,
   Inject,
@@ -23,6 +25,7 @@ import { RoleName } from 'src/domain/models/role.model';
 // DTOs e Models
 import { GateQueueItemDto } from '../dtos/gate-queue-item.dto';
 import { Inspection } from 'src/domain/models/inspection.model';
+import { RegisterGateExitDto } from '../dtos/register-gate-exit.dto';
 
 // Use Cases
 import { GetGateQueueUseCase } from 'src/domain/use-cases/get-gate-queue.use-case';
@@ -36,7 +39,7 @@ export class GateController {
   constructor(
     private readonly getQueueUseCase: GetGateQueueUseCase,
     private readonly registerExitUseCase: RegisterGateExitUseCase,
-  ) {}
+  ) { }
 
   // 1. Rota de Listagem (Fila)
   @Get('queue')
@@ -59,24 +62,17 @@ export class GateController {
   @Roles(RoleName.PORTARIA, RoleName.ADMIN)
   @ApiOperation({
     summary: 'Registrar saída física (Gate Out)',
-    description: 'Finaliza a inspeção (Status 11), registra data de saída e gera o PDF final.',
-  })
-  @ApiResponse({
-    status: 201,
-    description: 'Saída registrada e inspeção finalizada.',
-    type: Inspection,
-  })
-  @ApiResponse({
-    status: 400,
-    description: 'A inspeção não está no status correto (13) para sair.',
-  })
-  @ApiResponse({
-    status: 404,
-    description: 'Inspeção não encontrada.',
+    description: 'Finaliza a inspeção, registra data de saída e valida lacres.',
   })
   async registerExit(
     @Param('id', ParseIntPipe) id: number,
+    @Body() dto: RegisterGateExitDto, // 1. Recebe o DTO do corpo
+    @Req() req: any,                  // 2. Recebe a Request para pegar o User
   ): Promise<Inspection> {
-    return this.registerExitUseCase.execute(id);
+    // 3. Extrai o ID do usuário (ajuste conforme sua estratégia de JWT, geralmente é req.user.id ou req.user.userId)
+    const userId = req.user?.id || req.user?.userId;
+
+    // 4. Passa os 3 argumentos obrigatórios
+    return this.registerExitUseCase.execute(id, userId, dto);
   }
 }

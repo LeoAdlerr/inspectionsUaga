@@ -40,7 +40,7 @@ export class InspectionSealEntity {
 
   // Status da verificação individual (Portaria)
   @Column({ name: 'verification_status_id', nullable: true })
-  verificationStatusId: number;
+  verificationStatusId: number | null;
 
   // Relação com Lookup de Status
   @ManyToOne(() => LookupSealVerificationStatusEntity, { eager: true, nullable: true })

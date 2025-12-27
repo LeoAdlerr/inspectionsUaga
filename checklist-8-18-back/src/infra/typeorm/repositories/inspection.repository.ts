@@ -16,6 +16,7 @@ import { InspectionImage } from '@domain/models/inspection-image.model';
 import { InspectionSealEntity } from '../entities/inspection-seal.entity';
 // 1. IMPORTAR A ENTIDADE DE IMAGENS
 import { InspectionImageEntity } from '../entities/inspection-image.entity';
+import { QueryDeepPartialEntity } from 'typeorm/query-builder/QueryPartialEntity.js';
 
 @Injectable()
 export class InspectionRepository implements InspectionRepositoryPort {
@@ -351,18 +352,30 @@ export class InspectionRepository implements InspectionRepositoryPort {
   }
 
   async updateSeal(sealId: number, sealData: Partial<InspectionSeal>): Promise<void> {
-    await this.sealRepo.update(sealId, sealData);
+    // 1. Criamos um objeto parcial tipado explicitamente como a ENTIDADE
+    // Isso garante que o TypeORM entenda exatamente quais colunas atualizar.
+    const updatePayload: any = {};
+
+    if (sealData.verificationStatusId !== undefined) {
+      updatePayload.verificationStatusId = sealData.verificationStatusId;
+    }
+
+    // Se tiver outros campos para atualizar no futuro, adicione aqui.
+    // Mas por enquanto, a Portaria só mexe no status.
+
+    // 2. Executa o update apenas se houver algo para atualizar
+    if (Object.keys(updatePayload).length > 0) {
+      await this.sealRepo.update(sealId, updatePayload);
+    }
   }
 
   // --- 3. IMPLEMENTAÇÃO DO NOVO MÉTODO (TASK-RFB-01) ---
   async addSeal(sealData: Partial<InspectionSeal>): Promise<InspectionSeal> {
-    // Cria a entidade a partir do DTO/Partial
-    const entity = this.sealRepo.create(sealData);
-
-    // Salva no banco de dados
+    // Agora deve funcionar direto. Se reclamar, use 'as unknown as InspectionSealEntity'
+    // que é mais seguro que 'any', mas com a correção da Entidade acima, não deve precisar.
+    const entity = this.sealRepo.create(sealData as InspectionSealEntity);
     const savedEntity = await this.sealRepo.save(entity);
 
-    // Mapeia de volta para o modelo de domínio
     const model = new InspectionSeal();
     Object.assign(model, savedEntity);
     return model;

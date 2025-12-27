@@ -13,9 +13,11 @@ import { GenerateInspectionReportUseCase } from '../generate-inspection-report.u
 import { FileSystemPort } from '../../ports/file-system.port';
 import { RegisterGateExitDto } from 'src/api/dtos/register-gate-exit.dto';
 
-// Constantes de Status
+// Constantes de Status e Estágios
 const STATUS_AGUARDANDO_SAIDA = 13;
 const STATUS_FINALIZADO = 11;
+const STAGE_RFB = 4;
+const STAGE_ARMADOR = 5;
 
 @Injectable()
 export class RegisterGateExitUseCaseImpl implements RegisterGateExitUseCase {
@@ -37,7 +39,7 @@ export class RegisterGateExitUseCaseImpl implements RegisterGateExitUseCase {
   ): Promise<Inspection> {
     this.logger.log(`Registrando saída (Gate Out) para inspeção ${inspectionId} pelo usuário ${userId}`);
 
-    // 1. Busca a inspeção
+    // 1. Busca a inspeção (Garantindo que traga os lacres para o fallback)
     const inspection = await this.inspectionRepository.findById(inspectionId);
 
     if (!inspection) {
@@ -51,16 +53,39 @@ export class RegisterGateExitUseCaseImpl implements RegisterGateExitUseCase {
       );
     }
 
-    // 3. Atualizar Status de Lacres Individuais (Se houver no DTO)
-    // Isso permite rastrear qual lacre específico estava NOK, se necessário
+    // 3. Atualizar Status de Lacres Individuais (Lógica Robusta)
+    // CENÁRIO A: Frontend enviou validação item a item
     if (dto.sealVerifications && dto.sealVerifications.length > 0) {
       for (const verification of dto.sealVerifications) {
-        // Assume-se que o repositório possui updateSeal ou similar. 
-        // Se não tiver, precisaremos adicionar ao InspectionRepositoryPort.
         await this.inspectionRepository.updateSeal(verification.sealId, {
            verificationStatusId: verification.statusId
         });
       }
+    } 
+    // CENÁRIO B: Frontend enviou apenas status geral (Fallback)
+    // Se não veio validação individual, aplicamos o status geral aos lacres correspondentes
+    else {
+        this.logger.log('Aplicando status geral aos lacres individuais (Fallback)...');
+        
+        // Atualiza Lacre RFB se houver status geral e lacre cadastrado
+        if (dto.sealVerificationRfbStatusId && inspection.seals) {
+            const rfbSeals = inspection.seals.filter(s => s.stageId === STAGE_RFB);
+            for (const seal of rfbSeals) {
+                await this.inspectionRepository.updateSeal(seal.id, {
+                    verificationStatusId: dto.sealVerificationRfbStatusId
+                });
+            }
+        }
+
+        // Atualiza Lacre Armador se houver status geral e lacre cadastrado
+        if (dto.sealVerificationShipperStatusId && inspection.seals) {
+            const shipperSeals = inspection.seals.filter(s => s.stageId === STAGE_ARMADOR);
+            for (const seal of shipperSeals) {
+                await this.inspectionRepository.updateSeal(seal.id, {
+                    verificationStatusId: dto.sealVerificationShipperStatusId
+                });
+            }
+        }
     }
 
     // 4. Atualiza Inspeção (Dados Gerais, Operador e Finalização)
@@ -72,7 +97,7 @@ export class RegisterGateExitUseCaseImpl implements RegisterGateExitUseCase {
       gateOutAt: now,        // Timestamp da portaria
       gateOperatorId: userId, // Quem liberou (Rastreabilidade)
 
-      // Salva os status gerais da grade (visualizados no PDF)
+      // Salva os status gerais da grade
       sealVerificationRfbStatusId: dto.sealVerificationRfbStatusId,
       sealVerificationShipperStatusId: dto.sealVerificationShipperStatusId,
       sealVerificationTapeStatusId: dto.sealVerificationTapeStatusId,
@@ -82,7 +107,6 @@ export class RegisterGateExitUseCaseImpl implements RegisterGateExitUseCase {
     this.logger.log(`Inspeção ${inspectionId} finalizada (Status 11). Iniciando geração de PDF...`);
 
     // 5. Geração e Persistência do PDF
-    // O PDF é gerado AGORA, para que o nome do Gate Operator e os status dos lacres já apareçam no documento.
     try {
         const { buffer, filename } = await this.reportUseCase.executePdf(inspectionId);
         
@@ -96,7 +120,6 @@ export class RegisterGateExitUseCaseImpl implements RegisterGateExitUseCase {
         this.logger.log(`PDF gerado e salvo em: ${savedPath}`);
     } catch (error) {
         this.logger.error(`Erro ao gerar/salvar PDF no Gate Out: ${error.message}`, error.stack);
-        // Não lançamos erro aqui para não travar a saída do caminhão caso o PDF falhe (fallback)
     }
 
     // 6. Retorna a inspeção atualizada

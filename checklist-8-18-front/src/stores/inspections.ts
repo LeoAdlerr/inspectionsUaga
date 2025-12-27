@@ -618,12 +618,27 @@ export const useInspectionsStore = defineStore('inspections', {
         this.isLoading = false;
       }
     },
-    async registerGateExit(inspectionId: number) {
+    async registerGateExit(
+      inspectionId: number, 
+      verifications: { rfb: boolean; armador: boolean } // Recebe os booleanos
+    ) {
       this.isSubmitting = true;
       this.error = null;
+      
+      const STATUS_OK = 1; // 1 = Conforme/OK no banco
+
       try {
-        await apiService.registerExit(inspectionId);
-        // Otimistic update: remove o item da fila localmente
+        // Monta o payload exatamente como o RegisterGateExitDto do backend espera
+        const payload = {
+          // Se checou (true) manda 1, senão manda undefined (não envia null para evitar validação estrita)
+          sealVerificationRfbStatusId: verifications.rfb ? STATUS_OK : undefined,
+          sealVerificationShipperStatusId: verifications.armador ? STATUS_OK : undefined,
+        };
+
+        // Chama o service enviando o payload
+        await apiService.registerExit(inspectionId, payload);
+        
+        // Remove da lista local (Update Otimista)
         this.gateQueue = this.gateQueue.filter(i => i.id !== inspectionId);
       } catch (err) {
         this.error = (err as Error).message;
@@ -631,6 +646,6 @@ export const useInspectionsStore = defineStore('inspections', {
       } finally {
         this.isSubmitting = false;
       }
-    }
+    },
   },
 });
