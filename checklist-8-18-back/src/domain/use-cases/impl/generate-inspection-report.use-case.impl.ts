@@ -1,27 +1,26 @@
 import {
-  Injectable,
-  InternalServerErrorException,
-  Logger,
-  Inject,
+    Injectable,
+    InternalServerErrorException,
+    Logger,
+    Inject,
+    NotFoundException,
 } from '@nestjs/common';
 import * as path from 'path';
 import { GenerateInspectionReportUseCase, PdfResult } from '../generate-inspection-report.use-case';
-import { FindInspectionByIdUseCase } from '../find-inspection-by-id.use-case';
 import { PdfService } from '../../../infra/pdf/pdf.service';
 import { Inspection } from '../../models/inspection.model';
 import * as Handlebars from 'handlebars';
 import { FileSystemPort } from 'src/domain/ports/file-system.port';
 import { InspectionRepositoryPort } from '../../repositories/inspection.repository.port';
 
-// Constantes de IDs (Devem bater com o Banco)
+// Constantes de IDs
 const STAGE_INITIAL = 1;
 const STAGE_FINAL = 2;
-const STAGE_RFB = 4;   
-const STAGE_ARMADOR = 5; 
+const STAGE_RFB = 4;
+const STAGE_ARMADOR = 5;
 
 const CAT_PLATE = 1;
-const CAT_PANORAMIC = 2; // Usado para "Sem Precinto" e Panorâmicas gerais
-// Categorias de Precinto
+const CAT_PANORAMIC = 2;
 const CAT_PRECINTO_FRONT = 5;
 const CAT_PRECINTO_REAR = 6;
 const CAT_PRECINTO_LEFT = 7;
@@ -46,14 +45,13 @@ const HTML_TEMPLATE = `
   .checklist-table td:nth-child(2), .checklist-table td:nth-child(3), .checklist-table td:nth-child(4) { width: 15%; text-align: center; font-weight: bold; font-size: 9pt; }
   .checkbox-placeholder { font-family: 'DejaVu Sans', sans-serif; }
   
-  /* Assinaturas */
+  /* Assinaturas e Fotos */
   .signature-section { margin-top: 15px; padding-top: 5px; display: flex; justify-content: space-around; text-align: center; page-break-inside: avoid; }
   .signature-box { display: flex; flex-direction: column; align-items: center; min-height: 80px; width: 30%; }
   .signature-line { border-top: 1px solid black; width: 100%; margin-top: 25px; }
   .signature-caption { font-size: 7pt; margin-top: 2px; }
   .signature-image { max-height: 60px; max-width: 100%; height: auto; }
   
-  /* Galerias de Fotos */
   .photo-gallery { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 5px; }
   .photo-item { border: 1px solid #ccc; padding: 2px; text-align: center; width: 32%; box-sizing: border-box; page-break-inside: avoid; }
   .photo-item img { width: 100%; height: 120px; object-fit: cover; }
@@ -103,16 +101,12 @@ const HTML_TEMPLATE = `
           </tbody>
       </table>
 
-      <div class="section-title">MEDIDAS E LACRES FISCAIS</div>
+      <div class="section-title">MEDIDAS FÍSICAS</div>
       <table class="sub-table">
           <tr>
               <td><span class="field-label">Comp (m):</span> {{comprimento_verificado}}</td>
               <td><span class="field-label">Larg (m):</span> {{largura_verificada}}</td>
               <td><span class="field-label">Alt (m):</span> {{altura_verificada}}</td>
-          </tr>
-          <tr>
-              <td><span class="field-label">Lacre Armador:</span> {{lacre_armador}}</td>
-              <td colspan="2"><span class="field-label">Lacre RFB:</span> {{lacre_rfb}}</td>
           </tr>
       </table>
 
@@ -126,13 +120,13 @@ const HTML_TEMPLATE = `
               <td colspan="2">
                   <table class="no-border-table">
                       <tr>
-                          <td width="30%"><span class="field-label">Lacre RFB:</span></td>
+                          <td width="40%"><span class="field-label">Lacre RFB <small>({{rfbSealNumber}})</small>:</span></td>
                           <td>OK: <span class="checkbox-placeholder">{{{ifChecked seal_rfb_status 1}}}</span></td>
                           <td>NÃO OK: <span class="checkbox-placeholder">{{{ifChecked seal_rfb_status 2}}}</span></td>
                           <td>N/A: <span class="checkbox-placeholder">{{{ifChecked seal_rfb_status 3}}}</span></td>
                       </tr>
                       <tr>
-                          <td><span class="field-label">Lacre Armador:</span></td>
+                          <td><span class="field-label">Lacre Armador <small>({{armadorSealNumber}})</small>:</span></td>
                           <td>OK: <span class="checkbox-placeholder">{{{ifChecked seal_shipper_status 1}}}</span></td>
                           <td>NÃO OK: <span class="checkbox-placeholder">{{{ifChecked seal_shipper_status 2}}}</span></td>
                           <td>N/A: <span class="checkbox-placeholder">{{{ifChecked seal_shipper_status 3}}}</span></td>
@@ -295,11 +289,10 @@ export class GenerateInspectionReportUseCaseImpl implements GenerateInspectionRe
     private readonly logger = new Logger(GenerateInspectionReportUseCaseImpl.name);
 
     constructor(
-        private readonly findInspectionByIdUseCase: FindInspectionByIdUseCase,
         private readonly pdfService: PdfService,
         @Inject(FileSystemPort)
         private readonly fileSystemPort: FileSystemPort,
-        @Inject(InspectionRepositoryPort) 
+        @Inject(InspectionRepositoryPort)
         private readonly inspectionRepository: InspectionRepositoryPort,
     ) {
         this.registerHandlebarsHelpers();
@@ -313,20 +306,17 @@ export class GenerateInspectionReportUseCaseImpl implements GenerateInspectionRe
     async executePdf(inspectionId: number): Promise<PdfResult> {
         this.logger.log(`Gerando PDF para a inspeção ID: ${inspectionId}`);
 
-        // 1. Busca a inspeção
-        const inspection = await this.findInspectionByIdUseCase.execute(inspectionId);
+        const inspection = await this.inspectionRepository.findByIdWithDetails(inspectionId);
 
-        // 2. Gera o HTML
+        if (!inspection) {
+            throw new NotFoundException(`Inspeção ${inspectionId} não encontrada para geração de relatório.`);
+        }
+
         const populatedHtml = await this.getPopulatedHtml(inspectionId);
-
-        // 3. Gera o Buffer
         const pdfBuffer = await this.pdfService.generatePdfFromHtml(populatedHtml);
-
-        // 4. Gera o Nome
         const filename = this.generateStandardFilename(inspection);
         const filesDir = path.join('inspections', inspectionId.toString());
 
-        // 5. Salva no Servidor
         const savedPath = await this.fileSystemPort.saveFile(
             filesDir,
             filename,
@@ -334,7 +324,6 @@ export class GenerateInspectionReportUseCaseImpl implements GenerateInspectionRe
             'application/pdf'
         );
 
-        // 6. Atualiza a Entidade
         if (inspection.generatedPdfPath !== savedPath) {
             await this.inspectionRepository.update(inspection.id, {
                 generatedPdfPath: savedPath
@@ -349,7 +338,12 @@ export class GenerateInspectionReportUseCaseImpl implements GenerateInspectionRe
     }
 
     private async getPopulatedHtml(inspectionId: number): Promise<string> {
-        const inspection = await this.findInspectionByIdUseCase.execute(inspectionId);
+        const inspection = await this.inspectionRepository.findByIdWithDetails(inspectionId);
+
+        if (!inspection) {
+            throw new NotFoundException(`Inspeção ${inspectionId} não encontrada.`);
+        }
+
         const template = Handlebars.compile(HTML_TEMPLATE);
         const context = await this.prepareTemplateContext(inspection);
         return template(context);
@@ -366,11 +360,10 @@ export class GenerateInspectionReportUseCaseImpl implements GenerateInspectionRe
         const formatDate = (date: string | Date | null | undefined) =>
             date ? new Date(date).toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo' }) : 'N/A';
 
-        // --- DADOS BÁSICOS E ASSINATURAS ---
+        // ... (resto do mapeamento de assinaturas e checklist igual ao anterior) ...
         const inspectorSignatureBase64 = await this.convertFileToBase64(inspection.inspectorSignaturePath);
         const driverSignatureBase64 = await this.convertFileToBase64(inspection.driverSignaturePath);
 
-        // --- CHECKLIST ---
         const itemsWithDetails = (inspection.items || []).filter(
             (item: any) => (item.observations?.trim()) || (item.evidences && item.evidences.length > 0)
         );
@@ -392,11 +385,9 @@ export class GenerateInspectionReportUseCaseImpl implements GenerateInspectionRe
             })
         );
 
-        // --- FOTOS E LACRES (1:N) ---
         const images = inspection.images || [];
         const seals = inspection.seals || [];
 
-        // 1. Lacração Inicial
         const initialSeals = seals.filter((s: any) => s.stageId === STAGE_INITIAL);
         const initialSealsData = await Promise.all(initialSeals.map(async (s: any) => ({
             number: s.sealNumber,
@@ -408,7 +399,6 @@ export class GenerateInspectionReportUseCaseImpl implements GenerateInspectionRe
             base64: await this.convertFileToBase64(i.photoPath)
         })));
 
-        // 2. Conferência
         const finalSeals = seals.filter((s: any) => s.stageId === STAGE_FINAL);
         const finalSealsData = await Promise.all(finalSeals.map(async (s: any) => ({
             number: s.sealNumber,
@@ -420,35 +410,22 @@ export class GenerateInspectionReportUseCaseImpl implements GenerateInspectionRe
             base64: await this.convertFileToBase64(i.photoPath)
         })));
 
-        // 3. [NOVO] Lacração RFB (Task-PORT-03)
-        // Lacres
         const rfbSealObj = seals.find((s: any) => s.stageId === STAGE_RFB);
         const armadorSealObj = seals.find((s: any) => s.stageId === STAGE_ARMADOR);
-        
+
         const rfbSealPhoto = rfbSealObj ? await this.convertFileToBase64(rfbSealObj.photoPath) : null;
         const armadorSealPhoto = armadorSealObj ? await this.convertFileToBase64(armadorSealObj.photoPath) : null;
 
-        // Evidências de Precinto (ou Panorâmica de Saída)
-        // Nota: Se não tem precinto, a lógica manda para CAT_PANORAMIC (ID 2).
-        // Aqui buscamos explicitamente as categorias 5,6,7,8 para Precinto.
-        // E usamos a categoria 2 como fallback se hasPrecinto = false.
-        
         const precintoFrontObj = images.find(i => i.categoryId === CAT_PRECINTO_FRONT);
         const precintoRearObj = images.find(i => i.categoryId === CAT_PRECINTO_REAR);
         const precintoLeftObj = images.find(i => i.categoryId === CAT_PRECINTO_LEFT);
         const precintoRightObj = images.find(i => i.categoryId === CAT_PRECINTO_RIGHT);
-        
-        // Se NÃO tem precinto, a evidência é salva como CAT_PANORAMIC (ID 2).
-        // Como o ID 2 também é usado na conferência, pegamos a ÚLTIMA foto panorâmica adicionada, 
-        // ou todas as panorâmicas (o template já mostra todas no loop de conferência, 
-        // mas aqui queremos uma específica para a seção RFB se não tiver precinto).
-        // Para simplificar: Se hasPrecinto == false, mostramos a última foto panorâmica adicionada.
-        const noPrecintoObj = !inspection.hasPrecinto && panoramicPhotos.length > 0 
-            ? panoramicPhotos[panoramicPhotos.length - 1] // Assume a última como sendo a da etapa RFB
+
+        const noPrecintoObj = !inspection.hasPrecinto && panoramicPhotos.length > 0
+            ? panoramicPhotos[panoramicPhotos.length - 1]
             : null;
 
         return {
-            // ... Cabeçalho ...
             data_hr_inicio: formatDate(inspection.startDatetime),
             data_hr_termino: formatDate(inspection.endDatetime),
             registro_entrada: inspection.entryRegistration || 'N/A',
@@ -465,15 +442,23 @@ export class GenerateInspectionReportUseCaseImpl implements GenerateInspectionRe
             comprimento_verificado: inspection.verifiedLength ?? 'N/A',
             largura_verificada: inspection.verifiedWidth ?? 'N/A',
             altura_verificada: inspection.verifiedHeight ?? 'N/A',
-            lacre_armador: inspection.sealShipper || 'N/A',
-            lacre_rfb: inspection.sealRfb || 'N/A',
 
-            verificacao_responsavel_nome: inspection.sealVerificationResponsibleName || '',
-            verificacao_data: formatDate(inspection.sealVerificationDate),
-            seal_rfb_status: inspection.sealVerificationRfbStatusId,
-            seal_shipper_status: inspection.sealVerificationShipperStatusId,
+           // --- CORREÇÃO DE DADOS PARA A TABELA DE SAÍDA ---
+            verificacao_responsavel_nome: inspection.gateOperator?.fullName || inspection.sealVerificationResponsibleName || 'N/A',
+            verificacao_data: formatDate(inspection.gateOutAt || inspection.sealVerificationDate),
+            
+            // Números dos lacres para o Template
+            rfbSealNumber: rfbSealObj ? rfbSealObj.sealNumber : 'N/A',
+            armadorSealNumber: armadorSealObj ? armadorSealObj.sealNumber : 'N/A',
+
+            // [LÓGICA CORRIGIDA]: Tenta pegar o status do Lacre Individual. Se não tiver, pega o Geral.
+            // O operador '??' garante que se for null/undefined, usamos o fallback.
+            // Como '0' não é um ID válido de status (são 1, 2, 3), o operador funciona bem.
+            seal_rfb_status: rfbSealObj?.verificationStatusId ?? inspection.sealVerificationRfbStatusId,
+            seal_shipper_status: armadorSealObj?.verificationStatusId ?? inspection.sealVerificationShipperStatusId,
+            
+            // Fita não tem entidade separada, usa sempre o geral
             seal_tape_status: inspection.sealVerificationTapeStatusId,
-
             observations: inspection.observations || 'Nenhuma observação geral.',
             action_taken: inspection.actionTaken || 'Nenhuma providência tomada.',
 
@@ -483,7 +468,6 @@ export class GenerateInspectionReportUseCaseImpl implements GenerateInspectionRe
             driverSignatureBase64,
 
             detailedEvidenceItems,
-            
             initialSealsData,
             lacres_iniciais_lista: initialSeals.map((s: any) => s.sealNumber).join(', ') || 'Nenhum',
             platePhotosData,
@@ -496,20 +480,14 @@ export class GenerateInspectionReportUseCaseImpl implements GenerateInspectionRe
             lacres_finais_lista: finalSeals.map((s: any) => s.sealNumber).join(', ') || 'Nenhum',
             panoramicPhotosData,
 
-            // --- [DADOS NOVOS RFB] ---
             hasPrecinto: inspection.hasPrecinto,
             hasPrecintoText: inspection.hasPrecinto ? 'SIM' : 'NÃO',
-            rfbSealNumber: rfbSealObj ? rfbSealObj.sealNumber : 'N/A',
-            armadorSealNumber: armadorSealObj ? armadorSealObj.sealNumber : 'N/A',
-            
             rfbSealPhoto,
             armadorSealPhoto,
-            
             precintoFront: precintoFrontObj ? await this.convertFileToBase64(precintoFrontObj.photoPath) : null,
             precintoRear: precintoRearObj ? await this.convertFileToBase64(precintoRearObj.photoPath) : null,
             precintoLeft: precintoLeftObj ? await this.convertFileToBase64(precintoLeftObj.photoPath) : null,
             precintoRight: precintoRightObj ? await this.convertFileToBase64(precintoRightObj.photoPath) : null,
-            
             noPrecintoPhoto: noPrecintoObj ? await this.convertFileToBase64(noPrecintoObj.photoPath) : null,
         };
     }
@@ -518,7 +496,7 @@ export class GenerateInspectionReportUseCaseImpl implements GenerateInspectionRe
         const cleanReg = (inspection.entryRegistration || 'SEM_RE').replace(/[^a-zA-Z0-9]/g, '');
         const cleanPlate = (inspection.vehiclePlates || 'SEM_PLACA').replace(/[^a-zA-Z0-9]/g, '');
         const dateRef = inspection.endDatetime || new Date();
-        const timestamp = dateRef.toISOString().replace(/[-:T.]/g, '').slice(0, 12); // YYYYMMDDHHMM
+        const timestamp = dateRef.toISOString().replace(/[-:T.]/g, '').slice(0, 12);
         return `${cleanReg}_${cleanPlate}_${timestamp}.pdf`;
     }
 
