@@ -1,0 +1,30 @@
+version: "3.8"
+
+services:
+  # Mantemos o sufixo '-dev' para garantir clareza e evitar
+  # ambiguidade com futuros ambientes de produção
+  frontend-dev:
+    build:
+      context: .
+      dockerfile: Containerfile
+      # Mantemos o nome do contêiner explícito.
+    container_name: frontend-app-dev
+    ports:
+      - "3000:3000"
+    volumes:
+      # Manter os volumes é ESSENCIAL para o desenvolvimento.
+      # Assim, qualquer alteração que você fizer no código na sua máquina (VS Code, etc.)
+      # será refletida instantaneamente dentro do contêiner, ativando o hot-reload do Vite.
+      - ./src:/app/src
+      - ./cypress:/app/cypress
+    environment:
+      # Mantemos esta variável. É uma boa prática para garantir a estabilidade do hot-reload.
+      - CHOKIDAR_USEPOLLING=true
+      # A URL da API que a aplicação Vue usará para se comunicar.
+      - VITE_API_BASE_URL=http://localhost:8888
+      
+      # --- A CHAVE DA NOSSA FLEXIBILIDADE ---
+      # MOTIVAÇÃO: Esta é a variável que o nosso entrypoint.sh usa para decidir qual pipeline rodar.
+      # Por padrão, ela não é definida, então o script seguirá o fluxo de desenvolvimento (Testes Unitários -> Servidor Dev).
+      # Para rodar a pipeline completa, você pode ativá-la diretamente no comando.
+      - RUN_E2E=${RUN_E2E:-false}

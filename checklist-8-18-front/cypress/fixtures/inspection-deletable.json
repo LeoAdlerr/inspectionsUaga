@@ -1,0 +1,16 @@
+[
+  {
+    "id": 3,
+    "createdAt": "2025-09-22T15:00:00.000Z",
+    "status": { "id": 1, "name": "EM_INSPECAO" },
+    "inspectorName": "Inspetor Teste Delete",
+    "driverName": "Motorista Teste Delete"
+  },
+  {
+    "id": 1,
+    "createdAt": "2025-08-21T16:53:20.000Z",
+    "status": { "id": 3, "name": "REPROVADO" },
+    "inspectorName": "Rodrigo Alves",
+    "driverName": "Pedro Andrade"
+  }
+]

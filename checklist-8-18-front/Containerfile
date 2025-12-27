@@ -1,0 +1,64 @@
+# Usamos a imagem slim, que é uma ótima escolha: menor que a padrão, mas com as libs essenciais.
+FROM node:20-slim
+
+#
+# ESTÁGIO 1: INSTALAÇÃO DE DEPENDÊNCIAS DO SISTEMA
+# Esta parte cria uma camada base com tudo o que o Cypress precisa para rodar no Linux.
+#
+RUN apt-get update && apt-get install -y \
+    wget \
+    curl \
+    gnupg \
+    libgtk-3-0 \
+    libnss3 \
+    libasound2 \
+    libxss1 \
+    libx11-xcb1 \
+    libxcomposite1 \
+    libxdamage1 \
+    libxrandr2 \
+    libxshmfence1 \
+    libgbm1 \
+    libxext6 \
+    libxfixes3 \
+    libxi6 \
+    libxcb1 \
+    libxtst6 \
+    libpangocairo-1.0-0 \
+    libatk-bridge2.0-0 \
+    libcups2 \
+    fonts-liberation \
+    libappindicator3-1 \
+    libdbus-1-3 \
+    xvfb \
+    dos2unix \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+
+# Define o diretório de trabalho padrão dentro do contêiner
+WORKDIR /app
+
+# --- OTIMIZAÇÃO DE CACHE ---
+# MOTIVAÇÃO: Separar a instalação de dependências da cópia do código-fonte.
+# PASSO 1: Copia APENAS os arquivos que definem as dependências.
+COPY package.json yarn.lock ./
+
+# PASSO 2: Instala as dependências.
+# O Docker criará uma camada de cache aqui. Se 'package.json' e 'yarn.lock' não mudarem,
+# esta camada será reutilizada em builds futuros, poupando muito tempo.
+RUN yarn install --frozen-lockfile
+
+# PASSO 3: AGORA SIM, copia o resto do código-fonte.
+# Se você alterar apenas o seu código (.vue, .ts), o Docker reutilizará a camada do 'yarn install'
+# e o seu build será quase instantâneo.
+COPY . .
+
+# Esta parte garante que os scripts de shell tenham a formatação e as permissões corretas.
+RUN dos2unix ./entrypoint.sh ./wait-for-it.sh && \
+    chmod +x ./entrypoint.sh ./wait-for-it.sh
+
+# Expõe a porta para o desenvolvimento com Vite
+EXPOSE 3000
+
+# Define o comando padrão para o contêiner
+ENTRYPOINT ["./entrypoint.sh"]

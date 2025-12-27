@@ -1,0 +1,20 @@
+version: '3.8'
+
+services:
+  e2e-tester:
+    build:
+      context: ./checklist-8-18-front
+      dockerfile: Containerfile
+    container_name: uaga-e2e-tester
+    networks:
+      - app-network
+    environment:
+      # MOTIVAÇÃO: A URL que o Cypress (rodando dentro do contêiner) usará para
+      # aceder à aplicação. 'frontend-prod' é o nome do serviço que já está no ar.
+      - CYPRESS_BASE_URL=http://frontend-prod
+    
+    # --- A MÁGICA DA ORQUESTRAÇÃO ---
+    # MOTIVAÇÃO: Sobrescrevemos o entrypoint padrão. Este comando primeiro
+    # espera o serviço 'frontend-prod' estar acessível na porta 80, e SÓ ENTÃO
+    # executa o nosso script de teste simplificado.
+    entrypoint: /bin/sh -c './wait-for-it.sh frontend-prod:80 --timeout=120 --strict -- yarn test:e2e:ci'

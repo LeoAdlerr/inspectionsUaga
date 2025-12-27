@@ -1,0 +1,9 @@
+[
+  {
+    "id": 1,
+    "createdAt": "2025-08-21T16:53:20.000Z",
+    "status": { "name": "REPROVADO" },
+    "inspectorName": "Rodrigo Alves",
+    "driverName": "Pedro Andrade"
+  }
+]

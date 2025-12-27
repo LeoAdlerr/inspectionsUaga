@@ -1,0 +1,4 @@
+-- MOTIVAÇÃO do IISNODE: Esta linha é a chave para o nosso deploy com 'git pull'.
+      -- Ela instrui o iisnode a monitorar todos os arquivos .js na raiz e dentro da pasta /dist.
+      -- Se qualquer um desses arquivos mudar (como quando copiamos uma nova build),
+      -- o iisnode reiniciará automaticamente o processo do Node.js.

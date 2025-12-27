@@ -1,0 +1,10 @@
+{
+  // 1. Dizemos para ele herdar toda a nossa configuração principal.
+  "extends": "../tsconfig.json",
+  
+  // 2. Instruímos o TypeScript a incluir todos os arquivos .ts dentro da pasta cypress.
+  // Isto garante que ele leia tanto o 'commands.ts' quanto o nosso 'e2e.d.ts' com os tipos customizados.
+  "include": [
+    "**/*.ts"
+  ]
+}

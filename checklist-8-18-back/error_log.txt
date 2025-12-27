@@ -1,0 +1,78 @@
+[2025-09-03T23:08:40.298Z] FALHA AO GERAR PDF (inspecaoId: 2)
+ERROR: Não é possível gerar o relatório. Pontos pendentes: 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18.
+STACK TRACE: BadRequestException: Não é possível gerar o relatório. Pontos pendentes: 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18.
+    at GenerateInspectionReportUseCaseImpl.getPopulatedHtml (C:\git\checklistBalanca\checklist-8-18-back\src\domain\use-cases\impl\generate-inspection-report.use-case.impl.ts:203:19)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at GenerateInspectionReportUseCaseImpl.executePdf (C:\git\checklistBalanca\checklist-8-18-back\src\domain\use-cases\impl\generate-inspection-report.use-case.impl.ts:187:31)
+    at InspectionController.generateReportPdf (C:\git\checklistBalanca\checklist-8-18-back\src\api\controllers\inspection.controller.ts:181:25)
+    at C:\git\checklistBalanca\checklist-8-18-back\node_modules\@nestjs\core\router\router-execution-context.js:46:28
+    at C:\git\checklistBalanca\checklist-8-18-back\node_modules\@nestjs\core\router\router-proxy.js:9:17
+
+[2025-09-03T23:12:36.382Z] FALHA AO GERAR PDF (inspecaoId: 2)
+ERROR: Não é possível gerar o relatório. Pontos pendentes: 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18.
+STACK TRACE: BadRequestException: Não é possível gerar o relatório. Pontos pendentes: 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18.
+    at GenerateInspectionReportUseCaseImpl.getPopulatedHtml (C:\git\checklistBalanca\checklist-8-18-back\src\domain\use-cases\impl\generate-inspection-report.use-case.impl.ts:203:19)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at GenerateInspectionReportUseCaseImpl.executePdf (C:\git\checklistBalanca\checklist-8-18-back\src\domain\use-cases\impl\generate-inspection-report.use-case.impl.ts:187:31)
+    at InspectionController.generateReportPdf (C:\git\checklistBalanca\checklist-8-18-back\src\api\controllers\inspection.controller.ts:181:25)
+    at C:\git\checklistBalanca\checklist-8-18-back\node_modules\@nestjs\core\router\router-execution-context.js:46:28
+    at C:\git\checklistBalanca\checklist-8-18-back\node_modules\@nestjs\core\router\router-proxy.js:9:17
+
+[2025-09-03T23:21:34.585Z] FALHA AO GERAR PDF (inspecaoId: 2)
+ERROR: Não é possível gerar o relatório. Pontos pendentes: 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18.
+STACK TRACE: BadRequestException: Não é possível gerar o relatório. Pontos pendentes: 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18.
+    at GenerateInspectionReportUseCaseImpl.getPopulatedHtml (C:\git\checklistBalanca\checklist-8-18-back\src\domain\use-cases\impl\generate-inspection-report.use-case.impl.ts:203:19)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at GenerateInspectionReportUseCaseImpl.executePdf (C:\git\checklistBalanca\checklist-8-18-back\src\domain\use-cases\impl\generate-inspection-report.use-case.impl.ts:187:31)
+    at InspectionController.generateReportPdf (C:\git\checklistBalanca\checklist-8-18-back\src\api\controllers\inspection.controller.ts:181:25)
+    at C:\git\checklistBalanca\checklist-8-18-back\node_modules\@nestjs\core\router\router-execution-context.js:46:28
+    at C:\git\checklistBalanca\checklist-8-18-back\node_modules\@nestjs\core\router\router-proxy.js:9:17
+
+[2025-09-03T23:24:37.016Z] FALHA AO GERAR PDF (inspecaoId: 2)
+ERROR: Não é possível gerar o relatório. Pontos pendentes: 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18.
+STACK TRACE: BadRequestException: Não é possível gerar o relatório. Pontos pendentes: 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18.
+    at GenerateInspectionReportUseCaseImpl.getPopulatedHtml (C:\git\checklistBalanca\checklist-8-18-back\src\domain\use-cases\impl\generate-inspection-report.use-case.impl.ts:203:19)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at GenerateInspectionReportUseCaseImpl.executePdf (C:\git\checklistBalanca\checklist-8-18-back\src\domain\use-cases\impl\generate-inspection-report.use-case.impl.ts:187:31)
+    at InspectionController.generateReportPdf (C:\git\checklistBalanca\checklist-8-18-back\src\api\controllers\inspection.controller.ts:181:25)
+    at C:\git\checklistBalanca\checklist-8-18-back\node_modules\@nestjs\core\router\router-execution-context.js:46:28
+    at C:\git\checklistBalanca\checklist-8-18-back\node_modules\@nestjs\core\router\router-proxy.js:9:17
+
+[2025-09-03T23:35:06.043Z] FALHA NA INICIALIZAÇÃO DO PUPPETEER (onModuleInit)
+ERROR: Timed out after 30000 ms while waiting for the WS endpoint URL to appear in stdout!
+STACK TRACE: TimeoutError: Timed out after 30000 ms while waiting for the WS endpoint URL to appear in stdout!
+    at ChromeLauncher.launch (C:\git\checklistBalanca\checklist-8-18-back\node_modules\puppeteer-core\src\node\ProductLauncher.ts:204:15)
+    at PdfService.onModuleInit (C:\git\checklistBalanca\checklist-8-18-back\src\infra\pdf\pdf.service.ts:25:28)
+    at async Promise.all (index 0)
+    at callModuleInitHook (C:\git\checklistBalanca\checklist-8-18-back\node_modules\@nestjs\core\hooks\on-module-init.hook.js:43:5)
+    at Proxy.callInitHook (C:\git\checklistBalanca\checklist-8-18-back\node_modules\@nestjs\core\nest-application-context.js:234:13)
+    at Proxy.init (C:\git\checklistBalanca\checklist-8-18-back\node_modules\@nestjs\core\nest-application.js:100:9)
+    at setupE2eTest (C:\git\checklistBalanca\checklist-8-18-back\test\e2e\checklist-8-18\test-setup.helper.ts:19:5)
+    at Object.<anonymous> (C:\git\checklistBalanca\checklist-8-18-back\test\e2e\checklist-8-18\delete-inspection.e2e-spec.ts:16:43)
+
+[2025-11-12T19:20:08.788Z] FALHA INESPERADA AO GERAR PDF (inspecaoId: 2)
+ERROR: options.fn is not a function
+STACK TRACE: TypeError: options.fn is not a function
+    at Object.<anonymous> (C:\git\inspectionsUaga\checklist-8-18-back\src\domain\use-cases\impl\generate-inspection-report.use-case.impl.ts:326:36)
+    at Object.wrapper (C:\git\inspectionsUaga\checklist-8-18-back\node_modules\handlebars\lib\handlebars\internal\wrapHelper.js:10:19)
+    at Object.eval [as main] (eval at createFunctionContext (C:\git\inspectionsUaga\checklist-8-18-back\node_modules\handlebars\dist\cjs\handlebars\compiler\javascript-compiler.js:262:23), <anonymous>:83:139)
+    at main (C:\git\inspectionsUaga\checklist-8-18-back\node_modules\handlebars\lib\handlebars\runtime.js:230:22)
+    at ret (C:\git\inspectionsUaga\checklist-8-18-back\node_modules\handlebars\lib\handlebars\runtime.js:250:12)
+    at ret (C:\git\inspectionsUaga\checklist-8-18-back\node_modules\handlebars\lib\handlebars\compiler\compiler.js:548:21)
+    at GenerateInspectionReportUseCaseImpl.getPopulatedHtml (C:\git\inspectionsUaga\checklist-8-18-back\src\domain\use-cases\impl\generate-inspection-report.use-case.impl.ts:317:16)
+    at async GenerateInspectionReportUseCaseImpl.executePdf (C:\git\inspectionsUaga\checklist-8-18-back\src\domain\use-cases\impl\generate-inspection-report.use-case.impl.ts:294:31)
+    at async InspectionController.generateReportPdf (C:\git\inspectionsUaga\checklist-8-18-back\src\api\controllers\inspection.controller.ts:269:25)
+    at async C:\git\inspectionsUaga\checklist-8-18-back\node_modules\@nestjs\core\router\router-execution-context.js:46:28
+
+[2025-11-29T16:06:49.379Z] FALHA NA INICIALIZAÇÃO DO PUPPETEER (onModuleInit)
+ERROR: Timed out after 30000 ms while waiting for the WS endpoint URL to appear in stdout!
+STACK TRACE: TimeoutError: Timed out after 30000 ms while waiting for the WS endpoint URL to appear in stdout!
+    at ChromeLauncher.launch (C:\git\inspectionsUaga\checklist-8-18-back\node_modules\puppeteer-core\src\node\ProductLauncher.ts:204:15)
+    at async PdfService.onModuleInit (C:\git\inspectionsUaga\checklist-8-18-back\src\infra\pdf\pdf.service.ts:62:22)
+    at async Promise.all (index 0)
+    at async callModuleInitHook (C:\git\inspectionsUaga\checklist-8-18-back\node_modules\@nestjs\core\hooks\on-module-init.hook.js:43:5)
+    at async NestApplication.callInitHook (C:\git\inspectionsUaga\checklist-8-18-back\node_modules\@nestjs\core\nest-application-context.js:234:13)
+    at async NestApplication.init (C:\git\inspectionsUaga\checklist-8-18-back\node_modules\@nestjs\core\nest-application.js:100:9)
+    at async NestApplication.listen (C:\git\inspectionsUaga\checklist-8-18-back\node_modules\@nestjs\core\nest-application.js:170:13)
+    at async bootstrap (C:\git\inspectionsUaga\checklist-8-18-back\src\main.ts:68:3)
+

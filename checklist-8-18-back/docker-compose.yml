@@ -1,0 +1,73 @@
+version: "3.8"
+
+services:
+  # SERVIÇO 1: A NOSSA APLICAÇÃO BACKEND
+  # Mantemos o nome explícito para o ambiente de desenvolvimento.
+  backend-dev:
+    build:
+      context: .
+      # Apontamos para o nosso Containerfile otimizado.
+      dockerfile: Containerfile
+    container_name: backend-app-dev
+    ports:
+      - "8888:8888"
+    volumes:
+      # Os volumes para hot-reload continuam essenciais.
+      - ./src:/app/src
+      - ./test:/app/test
+      - ./uploads:/app/uploads
+    # A configuração de memória compartilhada para o Puppeteer.
+    shm_size: '1gb'
+    environment:
+      # --- CONFIGURAÇÃO DE AMBIENTE ATUALIZADA ---
+      # MOTIVAÇÃO: As variáveis agora apontam para o nosso serviço de banco de dados 'test-db'
+      # que viverá na mesma rede Docker.
+      - DB_HOST=test-db
+      - DB_PORT=3306
+      - DB_USERNAME=uaga_user
+      - DB_PASSWORD=uaga_password
+      - DB_DATABASE=uagabd 
+      - JWT_SECRET=your_super_secret_key_for_dev
+      # Passamos a variável de controle para o nosso entrypoint.sh
+      - RUN_E2E=${RUN_E2E:-true}
+      # Explicitamente dizemos a este ambiente para rodar em modo de desenvolvimento.
+      - NODE_ENV=development
+    # MOTIVAÇÃO: Garante que o serviço do banco de dados (test-db) esteja
+    # totalmente no ar antes de a API tentar se conectar a ele.
+    depends_on:
+      - test-db
+    networks:
+      - app-network
+
+  # SERVIÇO 2: O BANCO DE DADOS DE TESTE
+  # MOTIVAÇÃO: Criamos um contêiner de banco de dados dedicado e isolado
+  # para este ambiente, tornando-o 100% autossuficiente.
+  test-db:
+    image: mysql:8.0
+    container_name: backend-db-test
+    environment:
+      environment:
+      MYSQL_ROOT_PASSWORD: root_password
+      MYSQL_DATABASE: uagabd
+      MYSQL_USER: uaga_user
+      MYSQL_PASSWORD: uaga_password
+    ports:
+      - "3307:3306"
+    volumes:
+      - backend-db-data:/var/lib/mysql
+      # MOTIVAÇÃO: Mapeia o seu script init.sql local para o diretório
+      # de inicialização do contêiner MySQL. Isso garante que este ambiente
+      # de teste use a sua própria versão do schema, e não uma externa.
+      - ../checklist-8-18-bd/init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - app-network
+
+# Define a rede que permite que os contêineres se comuniquem uns com os outros
+# usando os nomes dos serviços como hostname (ex: 'test-db').
+networks:
+  app-network:
+    driver: bridge
+
+# Define o volume nomeado para persistir os dados do banco de dados.
+volumes:
+  backend-db-data:

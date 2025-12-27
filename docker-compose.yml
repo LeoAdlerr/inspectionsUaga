@@ -1,0 +1,83 @@
+version: "3.8"
+
+services:
+  # --- Serviço do Banco de Dados ---
+  db:
+    image: mysql:8.0
+    container_name: checklist-db
+    command: --default-authentication-plugin=mysql_native_password
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: uaga_password
+      MYSQL_DATABASE: uagabd
+      MYSQL_USER: uaga_user
+      MYSQL_PASSWORD: uaga_password
+    ports:
+      - "3306:3306"
+    volumes:
+      - ./checklist-8-18-bd/init.sql:/docker-entrypoint-initdb.d/init.sql
+      - checklist-db-data:/var/lib/mysql
+    healthcheck:
+      test: [ "CMD", "mysqladmin", "ping", "-h", "localhost" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    networks:
+      - app-network
+
+  # --- Serviço do Backend ---
+  backend-prod:
+    build:
+      context: ./checklist-8-18-back
+      dockerfile: Containerfile
+    container_name: checklist-backend-prod
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "8888:8888"
+    environment:
+      - NODE_ENV=production
+      - DB_HOST=db
+      - DB_PORT=3306
+      - DB_USERNAME=uaga_user
+      - DB_PASSWORD=uaga_password
+      - DB_DATABASE=uagabd
+      - CORS_ORIGINS=http://localhost:5173,http://localhost:3000,http://outro-dominio.com
+    networks:
+      - app-network
+    # Adicionamos um healthcheck para o frontend poder esperar por ele.
+    healthcheck:
+      test: [ "CMD-SHELL", "wget -q --spider http://localhost:8888/api || exit 1" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
+
+  # --- SERVIÇO DO FRONTEND (COM NGINX) ---
+  # MOTIVAÇÃO: Adicionamos o serviço final que serve a nossa UI.
+  # --- SERVIÇO DO FRONTEND (COM NGINX) ---
+  frontend-prod:
+    build:
+      # MOTIVAÇÃO: O contexto do build agora é a raiz do projeto ('.')
+      context: .
+      # E o Dockerfile a ser usado é o Containerfile que criamos na raiz.
+      dockerfile: Containerfile
+    container_name: checklist-frontend-prod
+    ports:
+      - "3000:80"
+    depends_on:
+      backend-prod:
+        condition: service_healthy
+    networks:
+      - app-network
+
+# --- Definições de Nível Superior ---
+volumes:
+  checklist-db-data:
+    driver: local
+
+networks:
+  app-network:
+    driver: bridge

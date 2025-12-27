@@ -1,0 +1,35 @@
+# Usamos a mesma imagem base para manter a consistência entre os ambientes.
+FROM node:20-slim
+
+# ESTÁGIO 1: INSTALAÇÃO DE DEPENDÊNCIAS DO SISTEMA
+# Este bloco é específico para o backend, garantindo que o Puppeteer funcione.
+RUN apt-get update && apt-get install -y \
+    wget curl gnupg libgtk-3-0 libnss3 libasound2 libxss1 \
+    libx11-xcb1 libxcomposite1 libxdamage1 libxrandr2 libxshmfence1 \
+    libgbm1 libxext6 libxfixes3 libxi6 libxcb1 libxtst6 \
+    libpangocairo-1.0-0 libatk-bridge2.0-0 libcups2 fonts-liberation \
+    libappindicator3-1 libdbus-1-3 xvfb dos2unix \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+
+# Define o diretório de trabalho padrão.
+WORKDIR /app
+
+# PASSO 1: Copia apenas os arquivos de definição de dependências.
+COPY package.json yarn.lock ./
+
+# PASSO 2: Instala as dependências para criar a camada de cache.
+RUN yarn install --frozen-lockfile
+
+# PASSO 3: Copia o restante do código-fonte.
+COPY . .
+
+# Garante que os scripts de shell tenham a formatação e as permissões corretas.
+RUN dos2unix ./entrypoint.sh ./wait-for-it.sh && \
+    chmod +x ./entrypoint.sh ./wait-for-it.sh
+
+# Expõe a porta padrão da nossa API NestJS.
+EXPOSE 8888
+
+# Define o entrypoint que irá orquestrar a execução dos testes e da aplicação.
+ENTRYPOINT ["./entrypoint.sh"]

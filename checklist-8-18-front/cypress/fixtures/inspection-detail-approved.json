@@ -1,0 +1,17 @@
+{
+  "id": 123,
+  "inspectorId": 1,
+  "driverName": "Motorista Aprovado",
+  "entryRegistration": "REG-APPROVED",
+  "vehiclePlates": "APV-2025",
+  "transportDocument": "TD-APPROVED",
+  "modality": { "id": 1, "name": "RODOVIARIO" },
+  "operationType": { "id": 1, "name": "VERDE" },
+  "unitType": { "id": 1, "name": "CONTAINER" },
+  "containerType": { "id": 1, "name": "DRY 20" },
+  "finalResult": "APROVADO",
+  "items": [
+    { "id": 1, "masterPointId": 1, "statusId": 2, "masterPoint": { "pointNumber": 1, "name": "CABINE" }, "evidences": [] },
+    { "id": 2, "masterPointId": 2, "statusId": 2, "masterPoint": { "pointNumber": 2, "name": "PNEUS" }, "evidences": [] }
+  ]
+}

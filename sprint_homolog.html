@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Burndown - Sprint Final (Dia 19/Dez)</title>
+    
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif; background-color: #f0f2f5; margin: 0; padding: 20px; color: #333; }
+        .container { max-width: 1200px; margin: auto; background-color: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        h1 { color: #2c3e50; border-bottom: 2px solid #eee; padding-bottom: 10px; }
+        
+        .sprint-info { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; background-color: #e8f5e9; padding: 15px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #c8e6c9; }
+        .sprint-info div { text-align: center; }
+        .sprint-info span { display: block; font-size: 1.8em; font-weight: bold; color: #2e7d32; }
+        .sprint-info label { font-size: 0.85em; text-transform: uppercase; color: #555; }
+
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; font-size: 14px; }
+        th, td { border: 1px solid #e1e4e8; padding: 10px; text-align: left; vertical-align: middle; }
+        th { background-color: #f8f9fa; font-weight: bold; color: #444; }
+        
+        .task-done { text-decoration: line-through; color: #999; background-color: #fafbfc; }
+        
+        /* Cores dos Blocos */
+        .block-fix { border-left: 5px solid #d32f2f; background-color: #ffebee; }
+        .block-rfb { border-left: 5px solid #1976d2; background-color: #e3f2fd; }
+        .block-port { border-left: 5px solid #388e3c; background-color: #e8f5e9; }
+        .block-exc { border-left: 5px solid #7b1fa2; background-color: #f3e5f5; }
+        
+        .target-today { border-left: 5px solid #00c853; background-color: #e8f5e9; } /* Meta de Hoje */
+
+        .badge { padding: 3px 8px; border-radius: 4px; font-size: 0.8em; font-weight: bold; color: white; }
+        .bg-be { background-color: #1976d2; }
+        .bg-fe { background-color: #f57c00; }
+        .bg-fs { background-color: #7b1fa2; }
+
+        select { padding: 5px; border-radius: 4px; border: 1px solid #ddd; }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+
+        <h1>🚀 Sprint Final: Sexta-feira (19/Dez)</h1>
+        <p><strong>Status:</strong> Bugs Resolvidos. Foco: <strong>Módulo RFB (Backend & Front)</strong>.</p>
+
+        <div class="sprint-info">
+            <div><span id="total-points">28</span><label>Total Pontos</label></div>
+            <div><span id="days-left">--</span><label>Dias Restantes</label></div>
+            <div><span id="points-per-day">--</span><label>Velocidade Necessária</label></div>
+            <div><span id="burned-points" style="color: #2e7d32;">0</span><label>Queimados</label></div>
+        </div>
+
+        <div style="height: 400px; margin-bottom: 30px;">
+            <canvas id="burndownChart"></canvas>
+        </div>
+
+        <h2>Backlog de Execução</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th style="width:5%">✔</th>
+                    <th style="width:15%">Data Entrega</th>
+                    <th>ID</th>
+                    <th>Tarefa</th>
+                    <th style="width:5%">Pts</th>
+                    <th style="width:8%">Stack</th>
+                </tr>
+            </thead>
+            <tbody id="task-list-body"></tbody>
+        </table>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            
+            const totalPoints = 28;
+            
+            const sprintDates = [
+                '18/Dez (Qui)', 
+                '19/Dez (Sex)', // HOJE
+                '20/Dez (Sáb)', 
+                '22/Dez (Seg)', 
+                '23/Dez (Ter)', 
+                '26/Dez (Sex)', 
+                '29/Dez (Seg)', 
+                '30/Dez (Ter)'
+            ];
+            
+            const storageKey = 'sprint_final_replan_v2'; // v2
+
+            let burndownChart;
+            let sprintTasks;
+
+            const initialTasks = [
+                // BLOCO 1: FIXES (CONCLUÍDO)
+                { id: 'TASK-FIX-03', desc: 'Validação Obrigatória Medidas', pts: 2, stack: 'FS', block: 'block-fix', isCompleted: true, dateCompleted: '18/Dez (Qui)' },
+                { id: 'TASK-FIX-01', desc: 'Corrigir Binding Galeria (Doc Review)', pts: 1, stack: 'FE', block: 'block-fix', isCompleted: true, dateCompleted: '19/Dez (Sex)' }, // FEITO HOJE
+                { id: 'TASK-FIX-02', desc: 'Corrigir Travamento Modal Upload', pts: 1, stack: 'FE', block: 'block-fix', isCompleted: true, dateCompleted: '19/Dez (Sex)' }, // FEITO HOJE
+
+                // BLOCO 2: RFB (META DE HOJE)
+                { id: 'TASK-RFB-01', desc: 'Endpoint Lacração RFB', pts: 3, stack: 'BE', block: 'block-rfb', target: true, isCompleted: false, dateCompleted: null },
+                { id: 'TASK-RFB-02', desc: 'Tela de Lacração RFB', pts: 3, stack: 'FE', block: 'block-rfb', target: true, isCompleted: false, dateCompleted: null },
+                { id: 'TASK-RFB-03', desc: 'Lógica Condicional Precinto', pts: 2, stack: 'FE', block: 'block-rfb', isCompleted: false, dateCompleted: null },
+
+                // BLOCO 3: PORTARIA (CORE)
+                { id: 'TASK-PORT-01', desc: 'Endpoints Portaria (Queue/Exit)', pts: 2, stack: 'BE', block: 'block-port', isCompleted: false, dateCompleted: null },
+                { id: 'TASK-PORT-02', desc: 'Dashboard Portaria (UI)', pts: 3, stack: 'FE', block: 'block-port', isCompleted: false, dateCompleted: null },
+                { id: 'TASK-PORT-03', desc: '⚠️ Serviço PDF Final & Rede', pts: 5, stack: 'BE', block: 'block-port', isCompleted: false, dateCompleted: null },
+
+                // BLOCO 4: EXCEÇÕES
+                { id: 'TASK-EXC-01', desc: 'Endpoint Rejeição (Erro Dados)', pts: 2, stack: 'BE', block: 'block-exc', isCompleted: false, dateCompleted: null },
+                { id: 'TASK-EXC-02', desc: 'Endpoint Rejeição (Lacre Div.)', pts: 2, stack: 'BE', block: 'block-exc', isCompleted: false, dateCompleted: null },
+                { id: 'TASK-EXC-03', desc: 'Modal Rejeição Portaria', pts: 2, stack: 'FE', block: 'block-exc', isCompleted: false, dateCompleted: null }
+            ];
+
+            function getStackClass(stack) {
+                if (stack === 'BE') return 'bg-be';
+                if (stack === 'FE') return 'bg-fe';
+                return 'bg-fs';
+            }
+
+            function loadData() {
+                const savedData = localStorage.getItem(storageKey);
+                if (savedData) {
+                    const parsedSaved = JSON.parse(savedData);
+                    sprintTasks = initialTasks.map(task => {
+                        const savedTask = parsedSaved.find(t => t.id === task.id);
+                        return savedTask ? { ...task, isCompleted: savedTask.isCompleted, dateCompleted: savedTask.dateCompleted } : task;
+                    });
+                } else {
+                    sprintTasks = JSON.parse(JSON.stringify(initialTasks));
+                }
+            }
+
+            function saveData() {
+                localStorage.setItem(storageKey, JSON.stringify(sprintTasks));
+            }
+
+            function updateStats() {
+                const burned = sprintTasks.filter(t => t.isCompleted).reduce((sum, t) => sum + t.pts, 0);
+                document.getElementById('burned-points').textContent = burned;
+
+                const remainingPoints = totalPoints - burned;
+                // Calculo aproximado de dias restantes a partir de "Hoje" (Indice 1 = 19/Dez)
+                const remainingDays = sprintDates.length - 1; 
+                
+                document.getElementById('days-left').textContent = remainingDays; 
+                document.getElementById('points-per-day').textContent = (remainingPoints / remainingDays).toFixed(2);
+            }
+
+            function renderTaskList() {
+                const tbody = document.getElementById('task-list-body');
+                tbody.innerHTML = '';
+                
+                sprintTasks.forEach((task, index) => {
+                    const tr = document.createElement('tr');
+                    tr.className = task.block;
+                    if (task.isCompleted) tr.classList.add('task-done');
+                    if (task.target && !task.isCompleted) tr.classList.add('target-today'); // Destaque para meta
+
+                    tr.innerHTML = `
+                        <td><input type="checkbox" data-index="${index}" ${task.isCompleted ? 'checked' : ''}></td>
+                        <td>
+                            <select data-index="${index}" ${!task.isCompleted ? 'disabled' : ''}>
+                                <option value="">Selecione...</option>
+                                ${sprintDates.map(d => `<option value="${d}" ${task.dateCompleted === d ? 'selected' : ''}>${d}</option>`).join('')}
+                            </select>
+                        </td>
+                        <td><b>${task.id}</b></td>
+                        <td>${task.desc}</td>
+                        <td align="center"><strong>${task.pts}</strong></td>
+                        <td><span class="badge ${getStackClass(task.stack)}">${task.stack}</span></td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+
+                // Listeners
+                tbody.querySelectorAll('input[type="checkbox"]').forEach(cb => {
+                    cb.addEventListener('change', (e) => {
+                        const idx = e.target.dataset.index;
+                        sprintTasks[idx].isCompleted = e.target.checked;
+                        if(!sprintTasks[idx].isCompleted) sprintTasks[idx].dateCompleted = null;
+                        
+                        // Auto-select today (19/Dez) if checking
+                        if(sprintTasks[idx].isCompleted && !sprintTasks[idx].dateCompleted) {
+                             sprintTasks[idx].dateCompleted = '19/Dez (Sex)'; 
+                        }
+                        
+                        saveAndRender();
+                    });
+                });
+
+                tbody.querySelectorAll('select').forEach(sel => {
+                    sel.addEventListener('change', (e) => {
+                        const idx = e.target.dataset.index;
+                        sprintTasks[idx].dateCompleted = e.target.value;
+                        saveAndRender();
+                    });
+                });
+            }
+
+            function renderChart() {
+                const idealData = sprintDates.map((_, i) => Math.max(0, totalPoints - (i * (totalPoints / (sprintDates.length - 1)))));
+                
+                // Dados Reais
+                const realData = [];
+                let currentPoints = totalPoints;
+                
+                sprintDates.forEach(date => {
+                    const pointsBurnedOnDate = sprintTasks
+                        .filter(t => t.isCompleted && t.dateCompleted === date)
+                        .reduce((acc, t) => acc + t.pts, 0);
+                    currentPoints -= pointsBurnedOnDate;
+                    realData.push(currentPoints);
+                });
+
+                if (burndownChart) burndownChart.destroy();
+
+                const ctx = document.getElementById('burndownChart').getContext('2d');
+                burndownChart = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: sprintDates,
+                        datasets: [
+                            { label: 'Ideal', data: idealData, borderColor: '#bbb', borderDash: [5, 5], fill: false },
+                            { label: 'Real', data: realData, borderColor: '#2e7d32', backgroundColor: 'rgba(46, 125, 50, 0.1)', fill: true, tension: 0.1 }
+                        ]
+                    },
+                    options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true, max: totalPoints + 2 } } }
+                });
+            }
+
+            function saveAndRender() {
+                saveData();
+                renderTaskList();
+                updateStats();
+                renderChart();
+            }
+
+            // Init
+            loadData();
+            renderTaskList();
+            updateStats();
+            renderChart();
+        });
+    </script>
+</body>
+</html>

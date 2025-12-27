@@ -1,0 +1,9 @@
+{
+  "id": 123,
+  "inspectorId": 1,
+  "driverName": "Motorista Teste",
+  "items": [
+    { "id": 1, "statusId": 2 },
+    { "id": 2, "statusId": 2 }
+  ]
+}

@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>Plano de Entregas - Projeto Inspeção 8/18</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; color: #333; max-width: 800px; margin: 0 auto; padding: 20px; }
+        h1 { color: #2c3e50; border-bottom: 2px solid #2c3e50; padding-bottom: 10px; text-align: center; }
+        h2 { color: #2980b9; margin-top: 30px; border-bottom: 1px solid #eee; padding-bottom: 5px; }
+        h3 { color: #16a085; margin-top: 20px; }
+        .meta-info { background-color: #f9f9f9; padding: 15px; border-radius: 5px; margin-bottom: 20px; border-left: 5px solid #2c3e50; }
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 0.9em; }
+        th, td { border: 1px solid #ddd; padding: 12px; text-align: left; }
+        th { background-color: #f2f2f2; color: #333; }
+        .tag { display: inline-block; padding: 3px 8px; border-radius: 3px; font-size: 0.8em; font-weight: bold; color: white; }
+        .tag-critico { background-color: #e74c3c; }
+        .tag-alto { background-color: #e67e22; }
+        .tag-medio { background-color: #f1c40f; color: #333; }
+        .timeline-box { background-color: #e8f6f3; padding: 15px; border-radius: 5px; margin-top: 10px; }
+        .footer { margin-top: 50px; text-align: center; font-size: 0.8em; color: #777; border-top: 1px solid #ddd; padding-top: 10px; }
+    </style>
+</head>
+<body>
+
+    <h1>Planejamento Estratégico de Entregas</h1>
+    <p style="text-align: center; font-size: 1.2em;"><strong>Projeto: Plataforma de Inspeção e Conferência (8/18)</strong></p>
+
+    <div class="meta-info">
+        <p><strong>Data do Documento:</strong> 19 de Novembro de 2025</p>
+        <p><strong>Responsável Técnico:</strong> Leonardo Adler da Silva - Analista de Sistemas</p>
+        <p><strong>Objetivo:</strong> Roadmap detalhado para o Go-Live da Versão 1.0.</p>
+        <p><strong>Deadline Final:</strong> 30 de Dezembro de 2025</p>
+    </div>
+
+    <h2>1. Visão Geral da Estratégia</h2>
+    <p>Para garantir a segurança da operação e a estabilidade do sistema, o ciclo final de desenvolvimento foi dividido em <strong>3 Entregas (Releases)</strong> incrementais. Cada entrega valida uma etapa crítica do processo logístico, minimizando riscos para o Go-Live final.</p>
+
+    <div class="timeline-box">
+        <strong>Resumo do Cronograma:</strong>
+        <ul>
+            <li>🚀 <strong>Release 1 (05/Dez):</strong> Fluxo Interno (Back-Office & Operação de Pátio).</li>
+            <li>🛡️ <strong>Release 2 (19/Dez):</strong> Compliance, Segurança e UX.</li>
+            <li>🏁 <strong>Release 3 (30/Dez):</strong> Portaria, Documentação Legal e Go-Live.</li>
+        </ul>
+    </div>
+
+    <h2>2. Detalhamento das Entregas</h2>
+
+    <h3>📦 RELEASE 1: O Fluxo Interno (Core)</h3>
+    <p><strong>Data Alvo:</strong> 05 de Dezembro de 2025</p>
+    <p><strong>Foco:</strong> Conectar os departamentos. O sistema deixa de ser isolado no Inspetor e passa a gerir o fluxo de aprovação e conferência.</p>
+    
+    <table>
+        <thead>
+            <tr>
+                <th>Item (US)</th>
+                <th>Descrição da Entrega</th>
+                <th>Valor para o Negócio</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><strong>Máquina de Estados (Backend)</strong></td>
+                <td>Implementação das regras de transição (Aprovado, Reprovado, Aprovado com ressalvas, Aguardando Conferência).</td>
+                <td>Garante que nenhum processo pula etapas obrigatórias.</td>
+            </tr>
+            <tr>
+                <td><strong>Interface do Documental</strong></td>
+                <td>Tela para visualização de inspeções e botões de Aprovar/Reprovar com Ressalvas.</td>
+                <td>Elimina a necessidade de validação via e-mail/WhatsApp.</td>
+            </tr>
+            <tr>
+                <td><strong>Lacração Pós-Inspeção</strong></td>
+                <td>Funcionalidade para o Inspetor registrar o lacre inicial após o "OK" do Documental.</td>
+                <td>Rastreabilidade desde o primeiro momento da carga.</td>
+            </tr>
+            <tr>
+                <td><strong>Fluxo do Conferente(Operacional)</strong></td>
+                <td>Fila de trabalho "Aguardando Carregamento", registro de Relacre com fotos.</td>
+                <td>Digitaliza a operação do conferente.</td>
+            </tr>
+            <tr>
+                <td><strong>Preparação PDF</strong></td>
+                <td>Estruturação do backend para adicionar novas fotos e para agrupar dados referentes a inspeção no nome do arquivo pdf</td>
+                <td>Garante rastreabilidade do documento e adiciona novas evidências</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h3>🛡️ RELEASE 2: Compliance e Refino</h3>
+    <p><strong>Data Alvo:</strong> 19 de Dezembro de 2025</p>
+    <p><strong>Foco:</strong> Adicionar camadas de segurança e melhorias de usabilidade antes da abertura para a portaria.</p>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Item (US)</th>
+                <th>Descrição da Entrega</th>
+                <th>Valor para o Negócio</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><strong>Validação de Precinto(conferente)</strong></td>
+                <td>Etapa final de conferência onde o lacre de segurança (Precinto) é validado no sistema.</td>
+                <td>Segurança crítica. Garante que a carga está selada para viagem.</td>
+            </tr>
+            <tr>
+                <td><strong>Gabarito Visual (UX)</strong></td>
+                <td>Ao clicar num item, o inspetor vê uma foto de "Exemplo Ideal vs. Defeito".</td>
+                <td>Padroniza o critério de inspeção entre inspetores novos e antigos.</td>
+            </tr>
+            <tr>
+                <td><strong>Validação de Lacres de saída ou pós conferência(autor a combinar, mas no momento seria a portaria)</strong></td>
+                <td>Verificação dos Lacres de Saída: Ele seleciona o veículo e segue um checklist simples para verificar os lacres fiscais (RFB, Armador, Fita), anexando as evidências fotográficas obrigatórias para cada um.</td>
+                <td>Digitaliza a operação e garante que está pronto para a saída.</td>
+            </tr>
+            <tr>
+                <td><strong>Preparação PDF</strong></td>
+                <td>Estruturação do backend para agrupar dados de Inspetor, Documental e Conferente.</td>
+                <td>Garante performance na geração do relatório final.</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h3>🏁 RELEASE 3: Go-Live (Portaria & Finalização)</h3>
+    <p><strong>Data Alvo:</strong> 30 de Dezembro de 2025</p>
+    <p><strong>Foco:</strong> Controle de saída física e geração da documentação legal.</p>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Item (US)</th>
+                <th>Descrição da Entrega</th>
+                <th>Valor para o Negócio</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><strong>Controle de Portaria</strong></td>
+                <td>Tela simplificada para o porteiro verificar status "Liberado" e registrar saída.</td>
+                <td>Controle físico de quem sai da planta.</td>
+            </tr>
+            <tr>
+                <td><strong> Relatório (PDF)</strong></td>
+                <td>Geração automática de PDF final único contendo histórico completo e assinaturas. Salvo na rede.</td>
+                <td>Compliance legal e arquivamento automático.</td>
+            </tr>
+            <tr>
+                <td><strong>Deploy Produção</strong></td>
+                <td>Instalação final no servidor, configuração de rede e backups.</td>
+                <td>Sistema 100% operacional (V1.0).</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <div class="footer">
+        Documento gerado para fins de alinhamento das entregas das Sprints<br>
+    </div>
+
+</body>
+</html>

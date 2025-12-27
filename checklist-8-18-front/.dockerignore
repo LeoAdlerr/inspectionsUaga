@@ -1,0 +1,11 @@
+dist
+.env*
+*.log
+.docker/
+.idea/
+node_modules
+
+# Ignora os artefatos gerados pelo Cypress, mas não a pasta em si
+cypress/downloads
+cypress/screenshots
+cypress/videos
