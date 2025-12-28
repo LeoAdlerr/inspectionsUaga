@@ -13,6 +13,8 @@ import { LookupModule } from './modules/lookup.module';
 import { FileSystemModule } from './infra/file-system/file-system.module';
 import { AuthModule } from './modules/auth.module';
 import { UsersModule } from './modules/users.module';
+// [NOVO]
+import { GateModule } from './modules/gate/gate.module'; 
 
 @Module({
   imports: [
@@ -29,6 +31,7 @@ import { UsersModule } from './modules/users.module';
     
     // Módulos de Feature
     InspectionModule,
+    GateModule, 
     LookupModule,
     FileSystemModule,
     AuthModule,

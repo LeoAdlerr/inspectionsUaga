@@ -733,7 +733,7 @@ export class InspectionController {
     FileFieldsInterceptor([
       { name: 'rfbPhoto', maxCount: 1 },         // Obrigatório
       { name: 'armadorPhoto', maxCount: 1 },     // Opcional
-      // NOVOS CAMPOS (TASK-RFB-03)
+      // CAMPOS (TASK-RFB-03)
       { name: 'precintoFront', maxCount: 1 },    // Obrigatório se hasPrecinto=true
       { name: 'precintoRear', maxCount: 1 },     // Obrigatório se hasPrecinto=true
       { name: 'precintoLeft', maxCount: 1 },     // Obrigatório se hasPrecinto=true

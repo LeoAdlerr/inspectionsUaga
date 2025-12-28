@@ -220,7 +220,8 @@ INSERT INTO `lookup_statuses` (`id`, `name`) VALUES
 (10, 'LIBERADO_SAIDA'),
 (11, 'FINALIZADO'),
 (12, 'REPROVADO_POS_AVALIACAO'),
-(13, 'AGUARDANDO_SAIDA');
+(13, 'AGUARDANDO_SAIDA'),
+(14, 'CORRECAO_DOCUMENTAL');
 
 INSERT INTO `lookup_modalities` (`id`, `name`) VALUES (1, 'RODOVIARIO'), (2, 'MARITIMO'), (3, 'AEREO');
 INSERT INTO `lookup_operation_types` (`id`, `name`) VALUES (1, 'VERDE'), (2, 'LARANJA'), (3, 'VERMELHA');

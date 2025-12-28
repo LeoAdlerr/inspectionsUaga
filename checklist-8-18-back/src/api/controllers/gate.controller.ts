@@ -8,12 +8,15 @@ import {
   ParseIntPipe,
   UseGuards,
   Inject,
+  UseInterceptors,
+  UploadedFile,
 } from '@nestjs/common';
 import {
   ApiTags,
   ApiOperation,
   ApiResponse,
   ApiBearerAuth,
+  ApiConsumes,
 } from '@nestjs/swagger';
 
 // Guards e Decorators de Auth
@@ -26,10 +29,13 @@ import { RoleName } from 'src/domain/models/role.model';
 import { GateQueueItemDto } from '../dtos/gate-queue-item.dto';
 import { Inspection } from 'src/domain/models/inspection.model';
 import { RegisterGateExitDto } from '../dtos/register-gate-exit.dto';
+import { RejectGateDto } from '../dtos/reject-gate.dto'; // [NOVO] Importar DTO de rejeição
 
 // Use Cases
 import { GetGateQueueUseCase } from 'src/domain/use-cases/get-gate-queue.use-case';
 import { RegisterGateExitUseCase } from 'src/domain/use-cases/register-gate-exit.use-case';
+import { RejectGateInspectionUseCase } from 'src/domain/use-cases/reject-gate-inspection.use-case'; // [NOVO] Use Case de Rejeição
+import { FileInterceptor } from '@nestjs/platform-express';
 
 @ApiTags('Gate (Portaria)')
 @Controller('gate')
@@ -39,11 +45,13 @@ export class GateController {
   constructor(
     private readonly getQueueUseCase: GetGateQueueUseCase,
     private readonly registerExitUseCase: RegisterGateExitUseCase,
+    // Injeção do Use Case de Rejeição
+    private readonly rejectInspectionUseCase: RejectGateInspectionUseCase,
   ) { }
 
   // 1. Rota de Listagem (Fila)
   @Get('queue')
-  @Roles(RoleName.PORTARIA, RoleName.ADMIN) // Apenas Portaria ou Admin
+  @Roles(RoleName.PORTARIA, RoleName.ADMIN)
   @ApiOperation({
     summary: 'Listar fila de saída (Status 13 - Aguardando Saída)',
     description: 'Retorna a lista de veículos liberados pelo Documental aguardando saída física.',
@@ -57,22 +65,40 @@ export class GateController {
     return this.getQueueUseCase.execute();
   }
 
-  // 2. Rota de Registro de Saída (Ação Final)
+  // 2. Rota de Registro de Saída (Ação Final - Sucesso)
   @Post('exit/:id')
   @Roles(RoleName.PORTARIA, RoleName.ADMIN)
   @ApiOperation({
     summary: 'Registrar saída física (Gate Out)',
-    description: 'Finaliza a inspeção, registra data de saída e valida lacres.',
+    description: 'Finaliza a inspeção (Status 11), registra data de saída e valida lacres.',
   })
   async registerExit(
     @Param('id', ParseIntPipe) id: number,
-    @Body() dto: RegisterGateExitDto, // 1. Recebe o DTO do corpo
-    @Req() req: any,                  // 2. Recebe a Request para pegar o User
+    @Body() dto: RegisterGateExitDto,
+    @Req() req: any,
   ): Promise<Inspection> {
-    // 3. Extrai o ID do usuário (ajuste conforme sua estratégia de JWT, geralmente é req.user.id ou req.user.userId)
+    // Extrai o ID do usuário logado
     const userId = req.user?.id || req.user?.userId;
 
-    // 4. Passa os 3 argumentos obrigatórios
     return this.registerExitUseCase.execute(id, userId, dto);
+  }
+
+  // 3. Rota de Rejeição (Ação de Correção - Erro)
+  @Post('reject/:id')
+  @Roles(RoleName.PORTARIA, RoleName.ADMIN)
+  @ApiOperation({ 
+    summary: 'Rejeitar saída',
+    description: 'Devolve para Correção (14) ou Lacração (9). Exige foto se for divergência de lacre.'
+  })
+  @ApiConsumes('multipart/form-data') // Importante para Swagger
+  @UseInterceptors(FileInterceptor('file')) // Captura o campo "file"
+  async rejectExit(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() dto: RejectGateDto,
+    @Req() req: any,
+    @UploadedFile() file: Express.Multer.File,
+  ): Promise<Inspection> {
+    const userId = req.user?.id || req.user?.userId;
+    return this.rejectInspectionUseCase.execute(id, userId, dto, file);
   }
 }
