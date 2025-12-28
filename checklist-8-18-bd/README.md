@@ -135,159 +135,142 @@ SET FOREIGN_KEY_CHECKS = 1;</code></pre>
 
 ```mermaid
 erDiagram
-    USERS {
-        INT id PK
-        VARCHAR full_name
-        VARCHAR username "Unique - Login"
-        VARCHAR email "Unique - Opcional"
-        VARCHAR password_hash
-        TINYINT is_active
-        VARCHAR signature_path
-        TIMESTAMP created_at
-        TIMESTAMP updated_at
-    }
-
-    ROLES {
-        INT id PK
-        VARCHAR name "Unique"
-        TEXT description
-        TIMESTAMP created_at
-    }
-
-    USER_ROLES {
-        INT user_id PK
-        INT role_id PK
-    }
-
-    INSPECTIONS {
-        INT id PK
-        INT inspector_id FK "Nullable"
-        INT conferente_id FK "Nullable"
-        INT status_id FK
-        VARCHAR entry_registration
-        VARCHAR vehicle_plates
-        VARCHAR transport_document
-        INT modality_id FK
-        INT operation_type_id FK
-        INT unit_type_id FK
-        INT container_type_id FK
-        VARCHAR container_number
-        TINYINT has_precinto "Novo: 0 ou 1"
-        DECIMAL verified_length
-        DECIMAL verified_width
-        DECIMAL verified_height
-        
-        DATETIME start_datetime
-        DATETIME inspection_started_at
-        DATETIME end_datetime
-        DATETIME conference_started_at
-        DATETIME conference_ended_at
-        
-        VARCHAR driver_name
-        VARCHAR driver_signature_path
-        VARCHAR inspector_signature_path
-        
-        VARCHAR seal_shipper
-        VARCHAR seal_rfb
-        
-        INT seal_verification_rfb_status_id FK
-        INT seal_verification_shipper_status_id FK
-        INT seal_verification_tape_status_id FK
-        VARCHAR seal_verification_responsible_name
-        VARCHAR seal_verification_signature_path
-        DATE seal_verification_date
-        
-        TEXT observations
-        TEXT action_taken
-        VARCHAR generated_pdf_path
-        TIMESTAMP created_at
-        TIMESTAMP updated_at
-    }
-
-    INSPECTION_SEALS {
-        INT id PK
-        INT inspection_id FK
-        VARCHAR seal_number
-        INT stage_id FK
-        VARCHAR photo_path
-        TIMESTAMP created_at
-    }
-
-    INSPECTION_IMAGES {
-        INT id PK
-        INT inspection_id FK
-        INT category_id FK
-        VARCHAR photo_path
-        TEXT description
-        TIMESTAMP created_at
-    }
-
-    INSPECTION_CHECKLIST_ITEMS {
-        INT id PK
-        INT inspection_id FK
-        INT master_point_id FK
-        INT status_id FK
-        TEXT observations
-        TIMESTAMP created_at
-        TIMESTAMP updated_at
-    }
-
-    ITEM_EVIDENCES {
-        INT id PK
-        INT item_id FK
-        VARCHAR file_path
-        VARCHAR file_name
-        INT file_size
-        VARCHAR mime_type
-        TIMESTAMP created_at
-    }
-
-    MASTER_INSPECTION_POINTS {
-        INT id PK
-        INT point_number "Unique"
-        VARCHAR name
-        TEXT description
-        VARCHAR category
-    }
-
-    LOOKUP_STATUSES { INT id PK VARCHAR name "Unique" }
-    LOOKUP_MODALITIES { INT id PK VARCHAR name "Unique" }
-    LOOKUP_OPERATION_TYPES { INT id PK VARCHAR name "Unique" }
-    LOOKUP_UNIT_TYPES { INT id PK VARCHAR name "Unique" }
-    LOOKUP_CONTAINER_TYPES { INT id PK VARCHAR name "Unique" }
-    LOOKUP_CHECKLIST_ITEM_STATUSES { INT id PK VARCHAR name "Unique" }
-    LOOKUP_SEAL_VERIFICATION_STATUSES { INT id PK VARCHAR name "Unique" }
-    
-    %% Novas Lookups para substituir ENUMs
-    LOOKUP_SEAL_STAGES { INT id PK VARCHAR name "Unique" }
-    LOOKUP_IMAGE_CATEGORIES { INT id PK VARCHAR name "Unique" }
-
-    %% Relacionamentos de Autenticacao
-    USERS ||--o{ USER_ROLES : "possui"
-    ROLES ||--o{ USER_ROLES : "atribuído"
-    USERS ||--o{ INSPECTIONS : "inspeciona"
-    USERS ||--o{ INSPECTIONS : "confere"
-
-    %% Relacionamentos principais e Evidencias
-    INSPECTIONS ||--o{ INSPECTION_CHECKLIST_ITEMS : "contém"
-    INSPECTION_CHECKLIST_ITEMS ||--o{ ITEM_EVIDENCES : "tem"
-    INSPECTIONS ||--o{ INSPECTION_SEALS : "possui lacres"
-    INSPECTIONS ||--o{ INSPECTION_IMAGES : "possui fotos"
-    
-    MASTER_INSPECTION_POINTS ||--o{ INSPECTION_CHECKLIST_ITEMS : "define"
-
-    %% Relacionamentos com lookups
-    LOOKUP_STATUSES ||--o{ INSPECTIONS : "status"
-    LOOKUP_MODALITIES ||--o{ INSPECTIONS : "modalidade"
-    LOOKUP_OPERATION_TYPES ||--o{ INSPECTIONS : "tipo_operação"
-    LOOKUP_UNIT_TYPES ||--o{ INSPECTIONS : "tipo_unidade"
-    LOOKUP_CONTAINER_TYPES ||--o{ INSPECTIONS : "tipo_container"
-    LOOKUP_SEAL_VERIFICATION_STATUSES ||--o{ INSPECTIONS : "status_lacre"
-    LOOKUP_CHECKLIST_ITEM_STATUSES ||--o{ INSPECTION_CHECKLIST_ITEMS : "status_item"
-    
-    %% Novos Relacionamentos
-    LOOKUP_SEAL_STAGES ||--o{ INSPECTION_SEALS : "define etapa"
-    LOOKUP_IMAGE_CATEGORIES ||--o{ INSPECTION_IMAGES : "define categoria"
+USERS {
+    INT id PK
+    VARCHAR full_name
+    VARCHAR username "Unique - Login"
+    VARCHAR email "Unique - Opcional"
+    VARCHAR password_hash
+    TINYINT is_active
+    VARCHAR signature_path
+    TIMESTAMP created_at
+    TIMESTAMP updated_at
+}
+ROLES {
+    INT id PK
+    VARCHAR name "Unique"
+    TEXT description
+    TIMESTAMP created_at
+}
+USER_ROLES {
+    INT user_id PK
+    INT role_id PK
+}
+INSPECTIONS {
+    INT id PK
+    INT inspector_id FK "Nullable"
+    INT conferente_id FK "Nullable"
+    INT gate_operator_id FK "Novo: Portaria"
+    INT status_id FK
+    VARCHAR entry_registration
+    VARCHAR vehicle_plates
+    VARCHAR transport_document
+    INT modality_id FK
+    INT operation_type_id FK
+    INT unit_type_id FK
+    INT container_type_id FK
+    VARCHAR container_number
+    TINYINT has_precinto "Novo: 0 ou 1"
+    DECIMAL verified_length
+    DECIMAL verified_width
+    DECIMAL verified_height
+    DATETIME start_datetime
+    DATETIME inspection_started_at
+    DATETIME end_datetime
+    DATETIME conference_started_at
+    DATETIME conference_ended_at
+    DATETIME gate_out_at "Novo: Saída Física"
+    VARCHAR driver_name
+    VARCHAR driver_signature_path
+    VARCHAR inspector_signature_path
+    VARCHAR seal_shipper
+    VARCHAR seal_rfb
+    INT seal_verification_rfb_status_id FK
+    INT seal_verification_shipper_status_id FK
+    INT seal_verification_tape_status_id FK
+    VARCHAR seal_verification_responsible_name
+    VARCHAR seal_verification_signature_path
+    DATE seal_verification_date
+    TEXT observations
+    TEXT action_taken
+    VARCHAR generated_pdf_path
+    TIMESTAMP created_at
+    TIMESTAMP updated_at
+}
+INSPECTION_SEALS {
+    INT id PK
+    INT inspection_id FK
+    VARCHAR seal_number
+    INT stage_id FK
+    VARCHAR photo_path
+    INT verification_status_id FK "Novo: Portaria"
+    TIMESTAMP created_at
+}
+INSPECTION_IMAGES {
+    INT id PK
+    INT inspection_id FK
+    INT category_id FK
+    VARCHAR photo_path
+    TEXT description
+    TIMESTAMP created_at
+}
+INSPECTION_CHECKLIST_ITEMS {
+    INT id PK
+    INT inspection_id FK
+    INT master_point_id FK
+    INT status_id FK
+    TEXT observations
+    TIMESTAMP created_at
+    TIMESTAMP updated_at
+}
+ITEM_EVIDENCES {
+    INT id PK
+    INT item_id FK
+    VARCHAR file_path
+    VARCHAR file_name
+    INT file_size
+    VARCHAR mime_type
+    TIMESTAMP created_at
+}
+MASTER_INSPECTION_POINTS {
+    INT id PK
+    INT point_number "Unique"
+    VARCHAR name
+    TEXT description
+    VARCHAR category
+}
+LOOKUP_STATUSES { INT id PK VARCHAR name "Unique" }
+LOOKUP_MODALITIES { INT id PK VARCHAR name "Unique" }
+LOOKUP_OPERATION_TYPES { INT id PK VARCHAR name "Unique" }
+LOOKUP_UNIT_TYPES { INT id PK VARCHAR name "Unique" }
+LOOKUP_CONTAINER_TYPES { INT id PK VARCHAR name "Unique" }
+LOOKUP_CHECKLIST_ITEM_STATUSES { INT id PK VARCHAR name "Unique" }
+LOOKUP_SEAL_VERIFICATION_STATUSES { INT id PK VARCHAR name "Unique" }
+LOOKUP_SEAL_STAGES { INT id PK VARCHAR name "Unique" }
+LOOKUP_IMAGE_CATEGORIES { INT id PK VARCHAR name "Unique" }
+%% Relacionamentos de Autenticacao
+USERS ||--o{ USER_ROLES : "possui"
+ROLES ||--o{ USER_ROLES : "atribuído"
+USERS ||--o{ INSPECTIONS : "inspeciona"
+USERS ||--o{ INSPECTIONS : "confere"
+USERS ||--o{ INSPECTIONS : "libera_saida"
+%% Relacionamentos principais e Evidencias
+INSPECTIONS ||--o{ INSPECTION_CHECKLIST_ITEMS : "contém"
+INSPECTION_CHECKLIST_ITEMS ||--o{ ITEM_EVIDENCES : "tem"
+INSPECTIONS ||--o{ INSPECTION_SEALS : "possui lacres"
+INSPECTIONS ||--o{ INSPECTION_IMAGES : "possui fotos"
+MASTER_INSPECTION_POINTS ||--o{ INSPECTION_CHECKLIST_ITEMS : "define"
+%% Relacionamentos com lookups
+LOOKUP_STATUSES ||--o{ INSPECTIONS : "status"
+LOOKUP_MODALITIES ||--o{ INSPECTIONS : "modalidade"
+LOOKUP_OPERATION_TYPES ||--o{ INSPECTIONS : "tipo_operação"
+LOOKUP_UNIT_TYPES ||--o{ INSPECTIONS : "tipo_unidade"
+LOOKUP_CONTAINER_TYPES ||--o{ INSPECTIONS : "tipo_container"
+LOOKUP_SEAL_VERIFICATION_STATUSES ||--o{ INSPECTIONS : "status_lacre_geral"
+LOOKUP_CHECKLIST_ITEM_STATUSES ||--o{ INSPECTION_CHECKLIST_ITEMS : "status_item"
+%% Novos Relacionamentos
+LOOKUP_SEAL_STAGES ||--o{ INSPECTION_SEALS : "define etapa"
+LOOKUP_IMAGE_CATEGORIES ||--o{ INSPECTION_IMAGES : "define categoria"
 ```
 
 <h2 id="dicionario-de-dados-completo">📖 Dicionário de Dados Completo</h2>
@@ -315,7 +298,7 @@ erDiagram
             <td>INT</td>
             <td>PK</td>
             <td>Não</td>
-            <td>Identificador unico do usuario.</td>
+            <td>Identificador único do usuário.</td>
             <td><code>1</code></td>
         </tr>
         <tr>
@@ -323,7 +306,7 @@ erDiagram
             <td>VARCHAR(255)</td>
             <td></td>
             <td>Não</td>
-            <td>Nome completo do usuario.</td>
+            <td>Nome completo do usuário.</td>
             <td><code>"Carlos Inspetor"</code></td>
         </tr>
         <tr>
@@ -331,7 +314,7 @@ erDiagram
             <td>VARCHAR(50)</td>
             <td>UNIQUE</td>
             <td>Não</td>
-            <td>Login principal do usuario.</td>
+            <td>Login principal do usuário.</td>
             <td><code>"cinspetor"</code></td>
         </tr>
         <tr>
@@ -339,7 +322,7 @@ erDiagram
             <td>VARCHAR(255)</td>
             <td>UNIQUE</td>
             <td>Sim</td>
-            <td>Email opcional. Se preenchido, deve ser unico.</td>
+            <td>Email opcional. Se preenchido, deve ser único.</td>
             <td><code>"inspetor@uaga.com.br"</code></td>
         </tr>
         <tr>
@@ -355,7 +338,7 @@ erDiagram
             <td>TINYINT(1)</td>
             <td></td>
             <td>Não</td>
-            <td>Status do usuario (1=Ativo, 0=Inativo).</td>
+            <td>Status do usuário (1=Ativo, 0=Inativo).</td>
             <td><code>1</code></td>
         </tr>
         <tr>
@@ -363,7 +346,7 @@ erDiagram
             <td>VARCHAR(512)</td>
             <td></td>
             <td>Sim</td>
-            <td>Caminho da imagem da assinatura pessoal do usuario.</td>
+            <td>Caminho da imagem da assinatura pessoal do usuário.</td>
             <td><code>"/signatures/user_1.png"</code></td>
         </tr>
     </tbody>
@@ -388,7 +371,7 @@ erDiagram
             <td>INT</td>
             <td>PK</td>
             <td>Não</td>
-            <td>Identificador unico da funcao.</td>
+            <td>Identificador único da função.</td>
             <td><code>3</code></td>
         </tr>
         <tr>
@@ -396,7 +379,7 @@ erDiagram
             <td>VARCHAR(50)</td>
             <td>UNIQUE</td>
             <td>Não</td>
-            <td>Nome unico da funcao (ex: ADMIN, CONFERENTE).</td>
+            <td>Nome único da função (ex: ADMIN, CONFERENTE).</td>
             <td><code>"INSPECTOR"</code></td>
         </tr>
     </tbody>
@@ -435,7 +418,7 @@ erDiagram
 <hr>
 
 <h3>Tabelas de Lookup (Mestras)</h3>
-<p>Contêm valores estáticos para garantir consistência.</p>
+<p>Contêm valores estáticos para garantir consistência em toda a aplicação.</p>
 <table border="1" style="border-collapse: collapse; width:100%;">
     <thead>
         <tr>
@@ -446,7 +429,7 @@ erDiagram
     <tbody>
         <tr>
             <td><code>lookup_statuses</code></td>
-            <td>Estados da inspeção (ex: AGUARDANDO_INSPECAO, EM_CONFERENCIA).</td>
+            <td>Estados da inspeção (ex: AGUARDANDO_INSPECAO, EM_CONFERENCIA, CORRECAO_DOCUMENTAL).</td>
         </tr>
         <tr>
             <td><code>lookup_modalities</code></td>
@@ -474,11 +457,11 @@ erDiagram
         </tr>
         <tr>
             <td><code>lookup_seal_stages</code></td>
-            <td>Etapas do lacre (INITIAL, FINAL, CONFERENCE).</td>
+            <td>Etapas do lacre (INITIAL, FINAL, CONFERENCE, RFB, ARMADOR).</td>
         </tr>
         <tr>
             <td><code>lookup_image_categories</code></td>
-            <td>Tipos de foto (PLATE, PANORAMIC, PRECINTO_FRONT, PRECINTO_REAR, etc).</td>
+            <td>Categorias de fotos (PLATE, PANORAMIC, PRECINTO_FRONT, etc.).</td>
         </tr>
     </tbody>
 </table>
@@ -552,14 +535,6 @@ erDiagram
             <td>ID único da inspeção.</td>
         </tr>
         <tr>
-            <td><code>has_precinto</code></td>
-            <td>TINYINT(1)</td>
-            <td></td>
-            <td>Não</td>
-            <td>Indica se a carga possui precinto/isca (1=Sim, 0=Não). Definido pelo Conferente.</td>
-            <td><code>1</code></td>
-        </tr>
-        <tr>
             <td><code>inspector_id</code></td>
             <td>INT</td>
             <td>FK</td>
@@ -572,6 +547,13 @@ erDiagram
             <td>FK</td>
             <td>Sim</td>
             <td>Usuário Conferente (Nulo até assumir a tarefa).</td>
+        </tr>
+        <tr>
+            <td><code>gate_operator_id</code></td>
+            <td>INT</td>
+            <td>FK</td>
+            <td>Sim</td>
+            <td>Usuário da Portaria que liberou a saída física.</td>
         </tr>
         <tr>
             <td><code>status_id</code></td>
@@ -602,6 +584,13 @@ erDiagram
             <td>Número do container (se aplicável).</td>
         </tr>
         <tr>
+            <td><code>has_precinto</code></td>
+            <td>TINYINT(1)</td>
+            <td></td>
+            <td>Não</td>
+            <td>Indica se a carga possui precinto/isca (1=Sim, 0=Não). Definido pelo Conferente.</td>
+        </tr>
+        <tr>
             <td><code>start_datetime</code></td>
             <td>DATETIME</td>
             <td></td>
@@ -620,7 +609,7 @@ erDiagram
             <td>DATETIME</td>
             <td></td>
             <td>Sim</td>
-            <td>Finalização da inspeção (Aprovado/Reprovado).</td>
+            <td>Finalização da inspeção pelo Inspetor (Aprovado/Reprovado).</td>
         </tr>
         <tr>
             <td><code>conference_started_at</code></td>
@@ -634,7 +623,14 @@ erDiagram
             <td>DATETIME</td>
             <td></td>
             <td>Sim</td>
-            <td>Finalização total (Saída).</td>
+            <td>Finalização total (Saída do Conferente).</td>
+        </tr>
+        <tr>
+            <td><code>gate_out_at</code></td>
+            <td>DATETIME</td>
+            <td></td>
+            <td>Sim</td>
+            <td>Data/Hora da saída física do veículo (Registrado pela Portaria).</td>
         </tr>
         <tr>
             <td><code>seal_shipper</code></td>
@@ -678,7 +674,7 @@ erDiagram
             <td>INT</td>
             <td>PK</td>
             <td>Não</td>
-            <td>ID único do registo de lacre.</td>
+            <td>ID único do registro de lacre.</td>
         </tr>
         <tr>
             <td><code>inspection_id</code></td>
@@ -707,6 +703,13 @@ erDiagram
             <td></td>
             <td>Sim</td>
             <td>Foto evidência do lacre.</td>
+        </tr>
+        <tr>
+            <td><code>verification_status_id</code></td>
+            <td>INT</td>
+            <td>FK</td>
+            <td>Sim</td>
+            <td>Validação individual na Portaria (OK/NOK).</td>
         </tr>
     </tbody>
 </table>
@@ -751,6 +754,13 @@ erDiagram
             <td></td>
             <td>Não</td>
             <td>Caminho do arquivo.</td>
+        </tr>
+        <tr>
+            <td><code>description</code></td>
+            <td>TEXT</td>
+            <td></td>
+            <td>Sim</td>
+            <td>Descrição opcional da imagem.</td>
         </tr>
     </tbody>
 </table>
@@ -843,42 +853,83 @@ erDiagram
     </tbody>
 </table>
 
-<h4><strong><code>item_evidences</code></strong></h4>
-<p>Evidências (fotos) atreladas a um item específico do checklist (ex: foto de um pneu furado).</p>
-<table border="1" style="border-collapse: collapse; width:100%;">
-    <thead>
-        <tr>
-            <th align="left">Nome da Coluna</th>
-            <th align="left">Tipo de Dado</th>
-            <th align="left">Chave</th>
-            <th align="left">Nulo?</th>
-            <th align="left">Descrição</th>
-        </tr>
-    </thead>
-    <tbody>
-        <tr>
-            <td><code>id</code></td>
-            <td>INT</td>
-            <td>PK</td>
-            <td>Não</td>
-            <td>ID da evidência.</td>
-        </tr>
-        <tr>
-            <td><code>item_id</code></td>
-            <td>INT</td>
-            <td>FK</td>
-            <td>Não</td>
-            <td>Vínculo com o item do checklist.</td>
-        </tr>
-        <tr>
-            <td><code>file_path</code></td>
-            <td>VARCHAR(512)</td>
-            <td></td>
-            <td>Não</td>
-            <td>Caminho do arquivo.</td>
-        </tr>
-    </tbody>
-</table>
+<h2 id="fluxo-dados">🔄 Fluxo de Dados e Ciclo de Vida</h2>
+<p>
+    Esta seção descreve como os dados transitam pelo sistema, desde a criação da inspeção até o arquivamento na saída do veículo.
+    O status da inspeção (<code>status_id</code>) atua como o cursor que move o processo entre os diferentes atores.
+</p>
+
+<h3>Máquina de Estados (State Machine)</h3>
+<p>O diagrama abaixo ilustra todas as transições possíveis de status no banco de dados.</p>
+
+```mermaid
+stateDiagram-v2
+    direction LR
+
+    %% Atores e Estados Iniciais
+    state "Criação (Documental)" as DocStart {
+        [*] --> AGUARDANDO_INSPECAO: Insert Inicial
+    }
+
+    state "Inspeção Física (Inspetor)" as Insp {
+        AGUARDANDO_INSPECAO --> EM_INSPECAO: Inspetor assume
+        EM_INSPECAO --> APROVADO: Checklist OK
+        EM_INSPECAO --> REPROVADO: Checklist NOK
+        
+        REPROVADO --> REPROVADO_POS_AVALIACAO: Doc confirma erro
+        REPROVADO --> APROVADO_COM_RESSALVAS: Doc aceita risco
+        
+        APROVADO --> AGUARDANDO_LACRACAO: Auto-transição
+        APROVADO_COM_RESSALVAS --> AGUARDANDO_LACRACAO: Auto-transição
+        
+        AGUARDANDO_LACRACAO --> AGUARDANDO_CONFERENCIA: Fotos/Lacres Iniciais
+    }
+
+    state "Conferência (Conferente)" as Conf {
+        AGUARDANDO_CONFERENCIA --> EM_CONFERENCIA: Início Carregamento
+        EM_CONFERENCIA --> CONFERENCIA_FINALIZADA: Fim Carregamento
+    }
+
+    state "Documental Final" as DocEnd {
+        CONFERENCIA_FINALIZADA --> AGUARDANDO_SAIDA: Lacração Fiscal (RFB)
+    }
+
+    state "Portaria (Gate Out)" as Gate {
+        AGUARDANDO_SAIDA --> CORRECAO_DOCUMENTAL: Dados Incorretos
+        CORRECAO_DOCUMENTAL --> AGUARDANDO_SAIDA: Correção Realizada
+        
+        AGUARDANDO_SAIDA --> FINALIZADO: Saída Confirmada
+        FINALIZADO --> [*]
+    }
+```
+
+<h3>Detalhamento das Etapas de Persistência</h3>
+
+<table border="1" style="border-collapse: collapse; width:100%;"> <thead> <tr> <th width="15%">Etapa / Ator</th> <th width="35%">Dados Criados/Alterados</th> <th width="50%">Descrição do Fluxo</th> </tr> </thead> <tbody> <tr> <td><strong>1. Criação</strong>
+
+
+<em>(Documental)</em></td> <td> <ul> <li><code>inspections</code> (INSERT)</li> <li><code>start_datetime</code></li> </ul> </td> <td>O Documental cria o "cabeçalho" da inspeção com Placa, Container e Modalidade. O status nasce como <strong>AGUARDANDO_INSPECAO (4)</strong>.</td> </tr> <tr> <td><strong>2. Checklist</strong>
+
+
+<em>(Inspetor)</em></td> <td> <ul> <li><code>inspection_started_at</code></li> <li><code>inspection_checklist_items</code></li> <li><code>item_evidences</code> (Fotos de Avarias)</li> <li><code>end_datetime</code> (Fim do Checklist)</li> </ul> </td> <td>O inspetor preenche os 18 pontos. Se tudo estiver OK, o sistema muda para <strong>APROVADO (2)</strong> e, imediatamente, para <strong>AGUARDANDO_LACRACAO (9)</strong>.</td> </tr> <tr> <td><strong>3. Lacração Inicial</strong>
+
+
+<em>(Inspetor)</em></td> <td> <ul> <li><code>inspection_seals</code> (Stage: INITIAL)</li> <li><code>inspection_images</code> (Placa/Panorâmica)</li> </ul> </td> <td>O inspetor registra os lacres vazios e fotos obrigatórias. Ao salvar, o status muda para <strong>AGUARDANDO_CONFERENCIA (7)</strong>, tornando o item visível para o Conferente.</td> </tr> <tr> <td><strong>4. Conferência</strong>
+
+
+<em>(Conferente)</em></td> <td> <ul> <li><code>conference_started_at</code></li> <li><code>has_precinto</code> (Flag Crítica)</li> <li><code>inspection_seals</code> (Stage: FINAL)</li> <li><code>inspection_images</code> (Precintos)</li> <li><code>conference_ended_at</code></li> </ul> </td> <td>O conferente inicia o carregamento. Ao finalizar, ele define se houve uso de Precinto Eletrônico (<code>has_precinto</code>). O status vai para <strong>CONFERENCIA_FINALIZADA (6)</strong>.</td> </tr> <tr> <td><strong>5. Lacração Fiscal</strong>
+
+
+<em>(Documental)</em></td> <td> <ul> <li><code>inspection_seals</code> (Stage: RFB/ARMADOR)</li> </ul> </td> <td>O documental insere os lacres da Receita Federal e Armador. O status avança para <strong>AGUARDANDO_SAIDA (13)</strong>.</td> </tr> <tr> <td><strong>6. Saída (Gate Out)</strong>
+
+
+<em>(Portaria)</em></td> <td> <ul> <li><code>gate_operator_id</code></li> <li><code>gate_out_at</code></li> <li><code>seal_verification_*</code> (Validação Grade)</li> <li><code>inspection_seals.verification_status_id</code></li> </ul> </td> <td>A portaria confere fisicamente os dados.
+
+
+Se OK: status <strong>FINALIZADO (11)</strong> e gera PDF.
+
+
+Se Erro: status <strong>CORRECAO_DOCUMENTAL (14)</strong> e volta para o Documental. </td> </tr> </tbody> </table>
 
 <h3 id="decisoes-design">Decisões de Design (Normalização e Indexação)</h3>
 <ul>

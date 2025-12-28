@@ -72,12 +72,6 @@ import { UpdateConferenceSealUseCaseImpl } from '../domain/use-cases/impl/update
 import { AddRfbSealUseCase } from '../domain/use-cases/add-rfb-seal.use-case';
 import { AddRfbSealUseCaseImpl } from '../domain/use-cases/impl/add-rfb-seal.use-case.impl';
 
-// --- USE CASES DA PORTARIA (NOVOS) ---
-import { GetGateQueueUseCase } from '../domain/use-cases/get-gate-queue.use-case';
-import { GetGateQueueUseCaseImpl } from '../domain/use-cases/impl/get-gate-queue.use-case.impl';
-import { RegisterGateExitUseCase } from '../domain/use-cases/register-gate-exit.use-case';
-import { RegisterGateExitUseCaseImpl } from '../domain/use-cases/impl/register-gate-exit.use-case.impl';
-
 // Ports e Repositories
 import { InspectionRepositoryPort } from '../domain/repositories/inspection.repository.port';
 import { InspectionRepository } from '../infra/typeorm/repositories/inspection.repository';
@@ -147,7 +141,6 @@ import { UsersModule } from './users.module';
   ],
   controllers: [
     InspectionController,
-    GateController, // <--- ADICIONADO
   ],
   providers: [
     { provide: CreateInspectionUseCase, useClass: CreateInspectionUseCaseImpl },
@@ -180,8 +173,6 @@ import { UsersModule } from './users.module';
     { provide: DeleteConferenceImageUseCase, useClass: DeleteConferenceImageUseCaseImpl },
     { provide: DeleteConferenceSealUseCase, useClass: DeleteConferenceSealUseCaseImpl },
     { provide: AddRfbSealUseCase, useClass: AddRfbSealUseCaseImpl },
-    { provide: GetGateQueueUseCase, useClass: GetGateQueueUseCaseImpl },
-    { provide: RegisterGateExitUseCase, useClass: RegisterGateExitUseCaseImpl },
 
     EmptyBodyValidationPipe,
   ],
