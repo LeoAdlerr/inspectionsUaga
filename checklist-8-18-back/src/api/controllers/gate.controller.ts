@@ -29,12 +29,12 @@ import { RoleName } from 'src/domain/models/role.model';
 import { GateQueueItemDto } from '../dtos/gate-queue-item.dto';
 import { Inspection } from 'src/domain/models/inspection.model';
 import { RegisterGateExitDto } from '../dtos/register-gate-exit.dto';
-import { RejectGateDto } from '../dtos/reject-gate.dto'; // [NOVO] Importar DTO de rejeição
+import { RejectGateDto } from '../dtos/reject-gate.dto'; 
 
 // Use Cases
 import { GetGateQueueUseCase } from 'src/domain/use-cases/get-gate-queue.use-case';
 import { RegisterGateExitUseCase } from 'src/domain/use-cases/register-gate-exit.use-case';
-import { RejectGateInspectionUseCase } from 'src/domain/use-cases/reject-gate-inspection.use-case'; // [NOVO] Use Case de Rejeição
+import { RejectGateInspectionUseCase } from 'src/domain/use-cases/reject-gate-inspection.use-case'; 
 import { FileInterceptor } from '@nestjs/platform-express';
 
 @ApiTags('Gate (Portaria)')

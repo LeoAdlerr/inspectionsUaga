@@ -647,5 +647,28 @@ export const useInspectionsStore = defineStore('inspections', {
         this.isSubmitting = false;
       }
     },
+    // Action para Rejeição
+    async rejectGateExit(
+      inspectionId: number, 
+      reason: string, 
+      observation: string, 
+      file?: File | null
+    ) {
+      this.isSubmitting = true;
+      this.error = null;
+
+      try {
+        await apiService.rejectExit(inspectionId, reason, observation, file);
+        
+        // Optimistic Update: Remove o veículo da fila pois ele foi devolvido
+        this.gateQueue = this.gateQueue.filter(i => i.id !== inspectionId);
+        
+      } catch (err) {
+        this.error = (err as Error).message;
+        throw err;
+      } finally {
+        this.isSubmitting = false;
+      }
+    },
   },
 });
