@@ -617,4 +617,37 @@ export const apiService = {
       body: JSON.stringify(data) 
     });
   },
+
+  /**
+   * Rejeita/Devolve a inspeção na portaria.
+   * Endpoint: POST /gate/reject/:id
+   * Content-Type: multipart/form-data
+   */
+  async rejectExit(
+    inspectionId: number, 
+    reason: string, 
+    observation: string, 
+    file?: File | null
+  ): Promise<void> {
+    const formData = new FormData();
+    
+    // Campos de Texto
+    formData.append('reason', reason);
+    if (observation) {
+      formData.append('observation', observation);
+    }
+
+    // Arquivo (Obrigatório se SEAL_DIVERGENCE, validado no front)
+    if (file) {
+      formData.append('file', file, file.name);
+    }
+
+    await apiFetch<void>(`/gate/reject/${inspectionId}`, {
+      method: 'POST',
+      body: formData, 
+      // Nota: Ao usar FormData, o navegador define o Content-Type e boundary automaticamente.
+      // O apiFetch deve ser capaz de não sobrescrever isso para 'application/json'.
+      // Se o seu apiFetch força JSON, passe um header explícito ou undefined.
+    });
+  },
 };
